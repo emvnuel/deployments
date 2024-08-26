@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payroll
+spec:
+  selector:
+    matchLabels:
+      app: payroll
+  template:
+    metadata:
+      labels:
+        app: payroll
+    spec:
+      containers:
+      - name: payroll
+        image: myawesomeapps/payroll:1.10-multiarch
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payroll-svc
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/metrics'
+    prometheus.io/port: '8080'
+  labels:
+    foo: bar
+spec:
+  type: ClusterIP
+  selector:
+    app: payroll
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: payroll-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  labels:
+    name: payroll-ingress
+spec:
+  tls:
+    - hosts:
+      - "payroll.labzzz.shop"
+      secretName: "payroll-tls"
+  rules:
+  - host: payroll.labzzz.shop
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: payroll-svc
+            port: 
+              number: 8080 
