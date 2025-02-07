@@ -44,10 +44,6 @@ metadata:
   labels:
     name: nginx-ingress
 spec:
-  tls:
-    - hosts:
-      - "nginx.labzzz.shop"
-      secretName: "nginx-service-tls"
   rules:
   - host: nginx.labzzz.shop
     http:
