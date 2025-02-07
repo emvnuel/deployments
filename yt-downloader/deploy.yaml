@@ -16,9 +16,6 @@ spec:
       - name: yt-downloader
         image: myawesomeapps/yt-downloader:1.0
         resources:
-          limits:
-            memory: "2048Mi"
-            cpu: "1000m"
         ports:
         - containerPort: 8080
 ---
