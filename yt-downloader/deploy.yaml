@@ -47,10 +47,6 @@ metadata:
   labels:
     name: yt-downloader-ingress
 spec:
-  tls:
-    - hosts:
-      - "yt-downloader.labzzz.shop"
-      secretName: "payroll-tls"
   rules:
   - host: yt-downloader.labzzz.shop
     http:
