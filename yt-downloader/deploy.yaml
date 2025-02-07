@@ -17,7 +17,7 @@ spec:
         image: myawesomeapps/yt-downloader:1.0
         resources:
           limits:
-            memory: "4096Mi"
+            memory: "2048Mi"
             cpu: "1000m"
         ports:
         - containerPort: 8080
