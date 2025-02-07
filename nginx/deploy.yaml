@@ -47,9 +47,15 @@ spec:
   tls:
     - hosts:
       - "nginx.labzzz.shop"
-      secretName: "payroll-tls"
+      secretName: "nginx-service-tls"
   rules:
   - host: nginx.labzzz.shop
     http:
       paths:
       - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nginx-service
+            port: 
+              number: 8080 
