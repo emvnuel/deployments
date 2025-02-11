@@ -47,6 +47,10 @@ metadata:
   labels:
     name: yt-downloader-ingress
 spec:
+  tls:
+    - hosts:
+      - "yt-downloader.labzzz.shop"
+      secretName: "yt-downloader-tls"
   rules:
   - host: yt-downloader.labzzz.shop
     http:
