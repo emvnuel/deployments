@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: yt-downloader
-        image: myawesomeapps/yt-downloader:1.2-multiarch
+        image: myawesomeapps/yt-downloader:1.3-multiarch
         resources:
         ports:
         - containerPort: 5000
