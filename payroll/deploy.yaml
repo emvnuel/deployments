@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: payroll
-        image: myawesomeapps/payroll:1.11-multiarch
+        image: myawesomeapps/payroll:1.12-multiarch
         env:
         - name: INSS_RANGES
           valueFrom:
