@@ -96,7 +96,9 @@ metadata:
     name: payroll-config
     namespace: default
 data:
-    INSS_RANGES: '[{"index":1,"aliquot":0.075,"init_value":1412,"end_value":1412},{"index":2,"aliquot":0.09,"init_value":1412.01,"end_value":2666.68},{"index":3,"aliquot":0.12,"init_value":2666.69,"end_value":4000.03},{"index":4,"aliquot":0.14,"init_value":4000.04,"end_value":7786.02},{"index":5,"aliquot":0.14,"init_value":7786.03,"end_value":1000000}]'
+    INSS_RANGES: '[{\"index\":1,\"aliquot\":0.075,\"init_value\":1518,\"end_value\":1518},{\"index\":2,\"aliquot\":0.09,\"init_value\":1518.01,\"end_value\":2793.88},{\"index\":3,\"aliquot\":0.12,\"init_value\":2793.89,\"end_value\":4190.83},{\"index\":4,\"aliquot\":0.14,\"init_value\":4190.84,\"end_value\":8157.41},{\"index\":5,\"aliquot\":0.14,\"init_value\":8157.42,\"end_value\":1000000}]'
     IRRF_RANGES: '[{"init_value":0,"end_value":2259.2,"aliquot":0,"deduction":0},{"init_value":2259.21,"end_value":2828.65,"aliquot":0.075,"deduction":169.44},{"init_value":2828.66,"end_value":3751.05,"aliquot":0.15,"deduction":381.44},{"init_value":3751.06,"end_value":4664.68,"aliquot":0.225,"deduction":662.77},{"init_value":4664.68,"end_value":1000000,"aliquot":0.275,"deduction":896}]'
     DEPENDENT_DEDUCTION_AMOUNT: "189.59"
-    INSS_RANGE_5_DISCOUNT_AMOUNT: "908.85"
+    INSS_RANGE_5_DISCOUNT_AMOUNT: "951.62"
+    MIN_GROSS_PAY: "1518"
+    
