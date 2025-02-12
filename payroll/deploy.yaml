@@ -36,6 +36,11 @@ spec:
             configMapKeyRef:
               name: payroll-config
               key: INSS_RANGE_5_DISCOUNT_AMOUNT
+        - name: MIN_GROSS_PAY
+          valueFrom:
+            configMapKeyRef:
+              name: payroll-config
+              key: MIN_GROSS_PAY
         resources:
           limits:
             memory: "128Mi"
