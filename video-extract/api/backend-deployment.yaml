@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-extract-backend
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: video-extract-backend
+  template:
+    metadata:
+      labels:
+        app: video-extract-backend
+    spec:
+      containers:
+      - name: video-extract-backend
+        image: myawesomeapps/video-extract-api:1.0
+        env:
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 8000

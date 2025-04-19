@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-extract-frontend
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: video-extract-frontend
+  template:
+    metadata:
+      labels:
+        app: video-extract-frontend
+    spec:
+      containers:
+      - name: video-extract-frontend
+        image: myawesomeapps/video-extract:1.1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80

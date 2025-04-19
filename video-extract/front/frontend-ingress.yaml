@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: video-extract-frontend-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  labels:
+    name: frontend-ingress
+spec:
+  tls:
+    - hosts:
+      - "video-extract.awesomeapps.cloud"
+      secretName: "video-extract-frontend-tls"
+  rules:
+  - host: video-extract.awesomeapps.cloud
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: video-extract-frontend-svc
+            port:
+              number: 80
