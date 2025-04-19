@@ -81,10 +81,10 @@ metadata:
 spec:
   tls:
     - hosts:
-      - "payroll.labzzz.shop"
+      - "payroll.awesomeapps.cloud"
       secretName: "payroll-tls"
   rules:
-  - host: payroll.labzzz.shop
+  - host: payroll.awesomeapps.cloud
     http:
       paths:
       - pathType: Prefix
