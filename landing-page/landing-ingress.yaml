@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: landing-page-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  labels:
+    name: landing-ingress
+spec:
+  tls:
+    - hosts:
+      - "awesomeapps.cloud"
+      secretName: "landing-page-tls"
+  rules:
+  - host: awesomeapps.cloud
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: landing-page-svc
+            port:
+              number: 80
