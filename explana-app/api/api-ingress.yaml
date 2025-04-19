@@ -10,10 +10,10 @@ metadata:
 spec:
   tls:
     - hosts:
-      - "api.explana.labzzz.shop"
+      - "api.explana.awesomeapps.cloud"
       secretName: "explanapp-api-tls"
   rules:
-  - host: api.explana.labzzz.shop
+  - host: api.explana.awesomeapps.cloud
     http:
       paths:
       - pathType: Prefix
