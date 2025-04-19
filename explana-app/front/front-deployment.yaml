@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: explana-client
-        image: myawesomeapps/explana-client:1.0
+        image: myawesomeapps/explana-client:1.1
         resources:
           limits:
             memory: "128Mi"
