@@ -6,6 +6,9 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    external-dns.alpha.kubernetes.io/hostname: video-extract.awesomeapps.cloud
+    external-dns.alpha.kubernetes.io/ttl: "120"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
   labels:
     name: frontend-ingress
 spec:
