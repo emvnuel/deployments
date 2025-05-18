@@ -47,8 +47,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     external-dns.alpha.kubernetes.io/hostname: nginx.awesomeapps.cloud
-    external-dns.alpha.kubernetes.io/ttl: "120"  # TTL in seconds
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"  # Enable Cloudflare proxy
+    external-dns.alpha.kubernetes.io/ttl: "120"
 spec:
   rules:
     - host: nginx.awesomeapps.cloud
