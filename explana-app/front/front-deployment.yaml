@@ -16,7 +16,7 @@ spec:
         image: myawesomeapps/explana-client:1.1
         resources:
           limits:
-            memory: "128Mi"
-            cpu: "500m"
+            memory: "512Mi"
+            cpu: "100m"
         ports:
         - containerPort: 8080

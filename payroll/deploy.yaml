@@ -43,7 +43,7 @@ spec:
               key: MIN_GROSS_PAY
         resources:
           limits:
-            memory: "128Mi"
+            memory: "512Mi"
             cpu: "250m"
         ports:
         - containerPort: 8080
