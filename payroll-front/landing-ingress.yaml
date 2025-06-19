@@ -12,6 +12,11 @@ metadata:
   labels:
     name: payroll-front-ingress
 spec:
+  tls:
+    - hosts:
+        - "salario.ninja"
+        - "www.salario.ninja"
+      secretName: "payroll-front-tls"
   rules:
   - host: salario.ninja
     http:
