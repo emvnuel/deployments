@@ -6,16 +6,15 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    external-dns.alpha.kubernetes.io/hostname: salario.ninja,www.salario.ninja
+    external-dns.alpha.kubernetes.io/hostname: salario.ninja
     external-dns.alpha.kubernetes.io/ttl: "120"
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"   
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
   labels:
     name: payroll-front-ingress
 spec:
   tls:
     - hosts:
         - "salario.ninja"
-        - "www.salario.ninja"
       secretName: "payroll-front-tls"
   rules:
   - host: salario.ninja
@@ -28,6 +27,26 @@ spec:
             name: payroll-front-svc
             port:
               number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: payroll-front-www-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    external-dns.alpha.kubernetes.io/hostname: www.salario.ninja
+    external-dns.alpha.kubernetes.io/ttl: "120"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+  labels:
+    name: payroll-front-www-ingress
+spec:
+  tls:
+    - hosts:
+        - "www.salario.ninja"
+      secretName: "payroll-front-tls"
+  rules:
   - host: www.salario.ninja
     http:
       paths:
