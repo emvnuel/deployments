@@ -6,7 +6,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    external-dns.alpha.kubernetes.io/hostname: awesomeapps.cloud
+    external-dns.alpha.kubernetes.io/hostname: awesomeapps.cloud,www.awesomeapps.cloud
     external-dns.alpha.kubernetes.io/ttl: "120"
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"    
   labels:
@@ -15,9 +15,20 @@ spec:
   tls:
     - hosts:
       - "awesomeapps.cloud"
+      - "www.awesomeapps.cloud"
       secretName: "landing-page-tls"
   rules:
   - host: awesomeapps.cloud
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: landing-page-svc
+            port:
+              number: 80
+  - host: www.awesomeapps.cloud
     http:
       paths:
       - pathType: Prefix
