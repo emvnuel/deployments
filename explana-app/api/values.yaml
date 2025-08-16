@@ -23,14 +23,6 @@ envFrom:
       name: db-configmap
 ingress:
   enabled: true
-  hostname: "api.explana.awesomeapps.cloud"
-  path: "/"
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    external-dns.alpha.kubernetes.io/hostname: api.explana.awesomeapps.cloud
-    external-dns.alpha.kubernetes.io/ttl: "120"
+  hostnames: "api.explana.awesomeapps.cloud"
   tls:
-    - hosts:
-      - "api.explana.awesomeapps.cloud"
-      secretName: "explanapp-api-tls"
+    enabled: true

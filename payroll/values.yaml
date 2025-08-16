@@ -17,25 +17,15 @@ envFrom:
       name: payroll-config
 ingress:
   enabled: true
-  hosts:
-    - host: payroll.awesomeapps.cloud
-      paths:
-        - path: /
-          pathType: Prefix
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hostnames: "payroll.awesomeapps.cloud"
+  extraAnnotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    external-dns.alpha.kubernetes.io/hostname: payroll.awesomeapps.cloud
-    external-dns.alpha.kubernetes.io/ttl: "120"
   tls:
-    - hosts:
-      - "payroll.awesomeapps.cloud"
-      secretName: "payroll-tls"
+    enabled: true
 
 probes:
   enabled: false
