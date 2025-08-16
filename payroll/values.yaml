@@ -37,6 +37,9 @@ ingress:
       - "payroll.awesomeapps.cloud"
       secretName: "payroll-tls"
 
+probes:
+  enabled: false
+
 configMap:
   enabled: true
   name: "payroll-config"
