@@ -1,28 +1,28 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: explanaapp-front-ingress
+nameOverride: "explana-client"
+replicaCount: 1
+image:
+  repository: "myawesomeapps/explana-client"
+  tag: "1.1"
+service:
+  name: "explana-client-svc"
+  port: 80
+  targetPort: 8080
+  type: ClusterIP
+resources:
+  limits:
+    cpu: 100m
+    memory: 512Mi
+ingress:
+  enabled: true
+  hostname: "explana.awesomeapps.cloud"
+  path: "/"
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     external-dns.alpha.kubernetes.io/hostname: explana.awesomeapps.cloud
     external-dns.alpha.kubernetes.io/ttl: "120"
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
-  labels:
-    name: api-ingress
-spec:
   tls:
     - hosts:
       - "explana.awesomeapps.cloud"
       secretName: "explanapp-client-tls"
-  rules:
-  - host: explana.awesomeapps.cloud
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: explana-client-svc
-            port: 
-              number: 80

@@ -1,0 +1,36 @@
+nameOverride: "landing-page"
+replicaCount: 1
+image:
+  repository: "myawesomeapps/landing-page"
+  tag: "1.1"
+service:
+  name: "landing-page-svc"
+  port: 80
+  targetPort: 3000
+  type: ClusterIP
+resources:
+  limits:
+    cpu: 100m
+    memory: 512Mi
+ingress:
+  enabled: true
+  hosts:
+    - host: awesomeapps.cloud
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: www.awesomeapps.cloud
+      paths:
+        - path: /
+          pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    external-dns.alpha.kubernetes.io/hostname: awesomeapps.cloud,www.awesomeapps.cloud
+    external-dns.alpha.kubernetes.io/ttl: "120"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+  tls:
+    - hosts:
+      - "awesomeapps.cloud"
+      - "www.awesomeapps.cloud"
+      secretName: "landing-page-tls"

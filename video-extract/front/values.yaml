@@ -1,29 +1,30 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: video-extract-frontend-ingress
-  namespace: default
+nameOverride: "video-extract-frontend"
+replicaCount: 1
+image:
+  repository: "myawesomeapps/video-extract"
+  tag: "1.1"
+service:
+  name: "video-extract-frontend-svc"
+  port: 80
+  targetPort: 80
+resources:
+  limits:
+    cpu: 100m
+    memory: 512Mi
+ingress:
+  enabled: true
+  hosts:
+    - host: video-extract.awesomeapps.cloud
+      paths:
+        - path: /
+          pathType: Prefix
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     external-dns.alpha.kubernetes.io/hostname: video-extract.awesomeapps.cloud
     external-dns.alpha.kubernetes.io/ttl: "120"
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
-  labels:
-    name: frontend-ingress
-spec:
   tls:
     - hosts:
       - "video-extract.awesomeapps.cloud"
       secretName: "video-extract-frontend-tls"
-  rules:
-  - host: video-extract.awesomeapps.cloud
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: video-extract-frontend-svc
-            port:
-              number: 80
