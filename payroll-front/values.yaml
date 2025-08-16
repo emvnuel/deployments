@@ -2,7 +2,7 @@ nameOverride: "payroll-front"
 replicaCount: 1
 image:
   repository: "myawesomeapps/payroll-front"
-  tag: "0.1.9-SNAPSHOT"
+  tag: "0.1.10"
 service:
   name: "payroll-front-svc"
   port: 80
