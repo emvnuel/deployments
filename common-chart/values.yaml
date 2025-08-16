@@ -90,21 +90,25 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-# -- Liveness probe configuration.
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 15
-  periodSeconds: 20
+# -- Probes configuration.
+probes:
+  # -- Enable or disable liveness and readiness probes.
+  enabled: true
+  # -- Liveness probe configuration.
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 15
+    periodSeconds: 20
 
-# -- Readiness probe configuration.
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
+  # -- Readiness probe configuration.
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
 
 # -- Environment variables for the container.
 env: []
