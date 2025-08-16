@@ -6,31 +6,36 @@ metadata:
   labels:
     {{- include "common-chart.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- $annotations := merge .Values.ingress.extraAnnotations .Values.ingress.annotations -}}
+    {{- if .Values.ingress.hostnames -}}
+    {{-   $_ := set $annotations "external-dns.alpha.kubernetes.io/hostname" .Values.ingress.hostnames -}}
+    {{- end -}}
+    {{- if .Values.ingress.cloudflare_proxied -}}
+    {{-   $_ := set $annotations "external-dns.alpha.kubernetes.io/cloudflare-proxied" "true" -}}
+    {{- end -}}
+    {{- toYaml $annotations | nindent 4 }}
 spec:
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
-    {{- range .Values.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
+        {{- $hostnames := .Values.ingress.hostnames | splitList "," -}}
+        {{- range $hostnames }}
         - {{ . | quote }}
         {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
+      secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (include "common-chart.fullname" .)) }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    {{- $hostnames := .Values.ingress.hostnames | splitList "," -}}
+    {{- range $hostnames }}
+    - host: {{ . | quote }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
+          - path: {{ $.Values.ingress.path }}
+            pathType: {{ $.Values.ingress.pathType }}
             backend:
               service:
                 name: {{ include "common-chart.serviceName" $ }}
                 port:
                   name: http
-          {{- end }}
     {{- end }}
 {{- end }}
