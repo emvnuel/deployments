@@ -1,0 +1,50 @@
+fullnameOverride: n8n-app
+
+image:
+  repository: n8nio/n8n
+  tag: 1.108.1
+
+# Ingress deployment for n8n.
+main:
+  config:
+    n8n:
+      hide_usage_page: true
+    extraEnv:
+      GENERIC_TIMEZONE: "America/Sao_Paulo"
+  secret:
+    n8n:
+      encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
+  resources:
+    limits:
+      memory: 2048Mi
+    requests:
+      memory: 512Mi
+  persistence:
+    # If true, use a Persistent Volume Claim, If false, use emptyDir
+    type: dynamic
+    enabled: true
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
+    # Persistent Volume size
+    size: 1Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: n8n.awesomeapps.cloud
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: n8n.awesomeapps.cloud
+      paths:
+        - "/"
+  tls:
+    - secretName: n8n-ingress-tls
+      hosts:
+        - n8n.awesomeapps.cloud
