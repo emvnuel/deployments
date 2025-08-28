@@ -123,17 +123,15 @@ alertmanager:
   config:
     global:
       smtp_smarthost: 'localhost:587'
-      smtp_from: 'alertmanager@example.com'
+      smtp_from: 'alertmanager@awesomeapps.cloud'
     route:
       group_by: ['alertname']
       group_wait: 10s
       group_interval: 10s
       repeat_interval: 1h
-      receiver: 'web.hook'
+      receiver: 'default'
     receivers:
-    - name: 'web.hook'
-      webhook_configs:
-      - url: 'http://127.0.0.1:5001/'
+    - name: 'default'
 
 # Node Exporter Configuration
 nodeExporter:
