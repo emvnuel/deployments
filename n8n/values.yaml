@@ -10,7 +10,7 @@ main:
     n8n:
       hide_usage_page: true
     extraEnv:
-      GENERIC_TIMEZONE: "America/Sao_Paulo"
+      GENERIC_TIMEZONE: "America/Recife"
   secret:
     n8n:
       encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
