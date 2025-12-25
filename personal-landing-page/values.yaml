@@ -1,0 +1,20 @@
+nameOverride: "personal-landing-page"
+replicaCount: 1
+image:
+  repository: "myawesomeapps/personal-landing-page"
+  tag: "1.0"
+service:
+  name: "personal-landing-page-svc"
+  port: 80
+  targetPort: 3000
+  type: ClusterIP
+resources:
+  limits:
+    cpu: 100m
+    memory: 512Mi
+ingress:
+  enabled: true
+  hostnames: "emvnuel.tech,www.emvnuel.tech"
+  cloudflare_proxied: true
+  tls:
+    enabled: true
