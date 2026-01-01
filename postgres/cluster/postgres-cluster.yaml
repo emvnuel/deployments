@@ -118,8 +118,6 @@ spec:
         login: true
         passwordSecret:
           name: postgres-readonly-user
-    services:
-      disabledDefaultServices: []
   
   # Node maintenance window
   nodeMaintenanceWindow:
