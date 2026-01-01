@@ -4,21 +4,10 @@
 # Number of replicas
 replicaCount: 1
 
-# Image configuration
-image:
-  registry: ghcr.io
-  repository: headlamp-k8s/headlamp
-  pullPolicy: IfNotPresent
-
-# Service configuration
-service:
-  type: ClusterIP
-  port: 80
-
 # Ingress configuration
 ingress:
   enabled: true
-  className: nginx
+  ingressClassName: nginx
   annotations:
     # External DNS for automatic DNS record creation
     external-dns.alpha.kubernetes.io/hostname: headlamp.awesomeapps.cloud
@@ -28,16 +17,13 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     # Nginx optimizations
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
     # Force HTTPS redirect
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   hosts:
     - host: headlamp.awesomeapps.cloud
       paths:
         - path: /
-          pathType: Prefix
+          type: ImplementationSpecific
   tls:
     - secretName: headlamp-tls
       hosts:
@@ -52,63 +38,13 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-# Probes configuration
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 30
-  periodSeconds: 10
-
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 10
-  periodSeconds: 5
-
-# RBAC configuration - Headlamp needs cluster-wide access
-rbac:
-  create: true
-  # Grant cluster-admin for full management capabilities
-  clusterRoleBinding:
-    create: true
-
-# Service account
-serviceAccount:
-  create: true
-  automount: true
-
-# Config for Headlamp
-config:
-  # Base URL path (use / for root)
-  baseURL: /
-  
-  # Enable plugins support
-  pluginsDir: /headlamp/plugins
+# Pod security context
+podSecurityContext:
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
 
 # Security context
 securityContext:
   runAsNonRoot: true
   runAsUser: 100
-  fsGroup: 101
-
-# Pod security context
-podSecurityContext:
-  seccompProfile:
-    type: RuntimeDefault
-
-# Node selector (optional)
-nodeSelector: {}
-
-# Tolerations (optional)
-tolerations: []
-
-# Affinity rules (optional)
-affinity: {}
-
-# Persistence for plugins (optional)
-persistence:
-  enabled: false
-  # storageClass: ""
-  # size: 1Gi
