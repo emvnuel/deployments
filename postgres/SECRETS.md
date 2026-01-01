@@ -4,6 +4,18 @@
 
 Secrets are **NOT stored in Git** for security reasons. They must be created manually in the cluster before deploying PostgreSQL via ArgoCD.
 
+## Password Guidelines
+
+**IMPORTANT:** Use only alphanumeric characters (a-z, A-Z, 0-9) for passwords to avoid issues with special characters in connection strings.
+
+Avoid: `+ / = @ : # $ % & *` and other special characters that require URL encoding.
+
+Generate secure alphanumeric passwords:
+```bash
+# Generate 32-character alphanumeric password
+openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32
+```
+
 ## Required Secrets
 
 ### 1. Database User Secrets
