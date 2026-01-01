@@ -4,8 +4,8 @@ metadata:
   name: postgres-cluster
   namespace: postgres
 spec:
-  # High availability: 1 primary + 2 replicas
-  instances: 3
+  # Reduced instances: 1 primary + 1 replica for lighter deployment
+  instances: 2
   
   # PostgreSQL version
   imageName: ghcr.io/cloudnative-pg/postgresql:16.2
@@ -13,24 +13,24 @@ spec:
   # Primary update strategy
   primaryUpdateStrategy: unsupervised
   
-  # Storage configuration
+  # Storage configuration (reduced for lighter deployment)
   storage:
-    size: 20Gi
+    size: 10Gi
     storageClass: "local-path"
   
   # WAL storage (optional but recommended for performance)
   walStorage:
-    size: 5Gi
+    size: 2Gi
     storageClass: "local-path"
   
-  # Resource limits
+  # Resource limits (reduced for lighter deployment)
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "200m"
     limits:
-      memory: "2Gi"
-      cpu: "2000m"
+      memory: "1Gi"
+      cpu: "1000m"
   
   # Affinity: spread replicas across nodes
   affinity:
@@ -41,18 +41,18 @@ spec:
   # PostgreSQL configuration
   postgresql:
     parameters:
-      # Memory settings
-      shared_buffers: "512MB"
-      effective_cache_size: "1536MB"
-      maintenance_work_mem: "128MB"
-      work_mem: "16MB"
+      # Memory settings (reduced for lighter deployment)
+      shared_buffers: "256MB"
+      effective_cache_size: "768MB"
+      maintenance_work_mem: "64MB"
+      work_mem: "8MB"
       
       # Checkpoint settings
       checkpoint_completion_target: "0.9"
-      wal_buffers: "16MB"
+      wal_buffers: "8MB"
       
-      # Connection settings
-      max_connections: "200"
+      # Connection settings (reduced)
+      max_connections: "100"
       
       # Query planner
       random_page_cost: "1.1"

@@ -9,20 +9,20 @@ spec:
   cluster:
     name: postgres-cluster
   
-  # Number of pooler instances
-  instances: 3
+  # Number of pooler instances (reduced)
+  instances: 2
   
   type: rw  # Read-write pooler (for primary)
   
   pgbouncer:
-    # PgBouncer configuration
+    # PgBouncer configuration (reduced for lighter deployment)
     poolMode: transaction  # Options: session, transaction, statement
     parameters:
-      max_client_conn: "1000"
-      default_pool_size: "25"
-      max_db_connections: "100"
-      max_user_connections: "100"
-      reserve_pool_size: "5"
+      max_client_conn: "500"
+      default_pool_size: "15"
+      max_db_connections: "50"
+      max_user_connections: "50"
+      reserve_pool_size: "3"
       reserve_pool_timeout: "5"
       server_idle_timeout: "600"
       server_lifetime: "3600"
@@ -37,8 +37,8 @@ spec:
         - name: pgbouncer
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "50m"
+              memory: "64Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "250m"
+              memory: "256Mi"
