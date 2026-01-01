@@ -16,12 +16,12 @@ spec:
   # Storage configuration
   storage:
     size: 20Gi
-    storageClass: ""  # Use cluster default storage class
+    storageClass: "local-path"
   
   # WAL storage (optional but recommended for performance)
   walStorage:
     size: 5Gi
-    storageClass: ""  # Use cluster default storage class
+    storageClass: "local-path"
   
   # Resource limits
   resources:
