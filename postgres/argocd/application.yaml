@@ -9,8 +9,8 @@ spec:
   project: postgres
   
   source:
-    repoURL: https://github.com/your-org/your-repo.git  # CHANGE THIS
-    targetRevision: main  # or master
+    repoURL: https://github.com/emvnuel/deployments.git
+    targetRevision: master
     path: postgres
     
     # Directory structure for deployment

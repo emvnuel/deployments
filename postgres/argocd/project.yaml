@@ -10,7 +10,7 @@ spec:
   
   # Source repositories
   sourceRepos:
-    - https://github.com/your-org/your-repo.git  # CHANGE THIS
+    - https://github.com/emvnuel/deployments.git
     - https://ghcr.io/cloudnative-pg/*  # CloudNativePG images
   
   # Destination clusters and namespaces
