@@ -1,5 +1,13 @@
+# ArgoCD self-management - these should not be synced by ArgoCD
 argocd/
+argocd/*
+argocd/**/*
+
+# Operator installation - manually managed
 operator/
+operator/*
+operator/**/*
+
 # Secrets - managed manually outside of git
 cluster/secrets.yaml
 backup/backup-secrets.yaml
