@@ -86,9 +86,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           runAsUser: 100
-          fsGroup: 101
         
         podSecurityContext:
+          fsGroup: 101
           seccompProfile:
             type: RuntimeDefault
         
