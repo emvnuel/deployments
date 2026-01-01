@@ -34,7 +34,13 @@ postgres/
 
 ## Installation Steps
 
-### 1. Install CloudNativePG Operator
+### Option A: Deploy with ArgoCD (Recommended for GitOps)
+
+**Prerequisites:**
+- ArgoCD installed in your cluster
+- CloudNativePG operator installed (see below)
+
+**Step 1: Install CloudNativePG Operator**
 
 ```bash
 # Install the operator (only once per cluster)
@@ -44,23 +50,64 @@ kubectl apply -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg
 kubectl get pods -n cnpg-system
 ```
 
-### 2. Configure Secrets
+**Step 2: Create Secrets Manually**
 
-Edit the following files with your actual credentials:
+**IMPORTANT:** Secrets are NOT stored in git for security. See [SECRETS.md](SECRETS.md) for detailed instructions.
 
-**Database passwords** (`cluster/secrets.yaml`):
 ```bash
-# Edit with secure passwords
-vi cluster/secrets.yaml
+# Generate secure passwords
+openssl rand -base64 32  # For postgres superuser
+openssl rand -base64 32  # For app_user
+
+# Create secrets locally (these files won't be committed)
+# See SECRETS.md for template
+
+# Apply secrets to cluster
+kubectl create namespace postgres
+kubectl apply -f cluster/secrets.yaml
+kubectl apply -f backup/backup-secrets.yaml
 ```
 
-**Backup credentials** (`backup/backup-secrets.yaml`):
+**Step 3: Deploy via ArgoCD**
+
 ```bash
-# Add your S3 credentials
-vi backup/backup-secrets.yaml
+# Apply ArgoCD project and application
+kubectl apply -f argocd/project.yaml
+kubectl apply -f argocd/application.yaml
+
+# ArgoCD will automatically sync from git (excluding secrets)
 ```
 
-### 3. Configure Backup Storage
+**Step 4: Verify Deployment**
+
+```bash
+# Check ArgoCD application
+kubectl get application -n argocd postgres-cluster
+
+# Check PostgreSQL cluster
+kubectl get cluster -n postgres
+kubectl get pods -n postgres
+```
+
+### Option B: Manual Deployment (Without ArgoCD)
+
+### Option B: Manual Deployment (Without ArgoCD)
+
+**Step 1: Install CloudNativePG Operator**
+
+```bash
+# Install the operator (only once per cluster)
+kubectl apply -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.22/releases/cnpg-1.22.0.yaml
+
+# Verify installation
+kubectl get pods -n cnpg-system
+```
+
+**Step 2: Configure Secrets**
+
+See [SECRETS.md](SECRETS.md) for detailed instructions on creating secrets.
+
+**Step 3: Configure Backup Storage**
 
 Edit `cluster/postgres-cluster.yaml` and update the backup destination:
 
@@ -72,7 +119,7 @@ backup:
 
 For MinIO or non-AWS S3, also set the endpoint in `backup/backup-secrets.yaml`.
 
-### 4. Deploy PostgreSQL Cluster
+**Step 4: Deploy PostgreSQL Cluster**
 
 ```bash
 # Create namespace
@@ -92,7 +139,7 @@ kubectl apply -f cluster/postgres-pooler.yaml
 kubectl apply -f monitoring/prometheus-rules.yaml
 ```
 
-### 5. (Optional) Enable External Access
+**Step 5: (Optional) Enable External Access**
 
 To expose PostgreSQL externally via nginx ingress:
 
@@ -106,7 +153,7 @@ kubectl apply -f ingress/postgres-external-service.yaml
 
 See `ingress/README.md` for complete external access setup and security considerations.
 
-### 6. Verify Deployment
+**Step 6: Verify Deployment**
 
 ```bash
 # Check cluster status
