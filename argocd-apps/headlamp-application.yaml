@@ -1,0 +1,117 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: headlamp
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: https://headlamp-k8s.github.io/headlamp/
+    targetRevision: 0.25.1
+    chart: headlamp
+    
+    helm:
+      values: |
+        replicaCount: 1
+        
+        image:
+          registry: ghcr.io
+          repository: headlamp-k8s/headlamp
+          pullPolicy: IfNotPresent
+        
+        service:
+          type: ClusterIP
+          port: 80
+        
+        ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            external-dns.alpha.kubernetes.io/hostname: headlamp.awesomeapps.cloud
+            external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+            nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+          hosts:
+            - host: headlamp.awesomeapps.cloud
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: headlamp-tls
+              hosts:
+                - headlamp.awesomeapps.cloud
+        
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        
+        rbac:
+          create: true
+          clusterRoleBinding:
+            create: true
+        
+        serviceAccount:
+          create: true
+          automount: true
+        
+        config:
+          baseURL: /
+          pluginsDir: /headlamp/plugins
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 100
+          fsGroup: 101
+        
+        podSecurityContext:
+          seccompProfile:
+            type: RuntimeDefault
+        
+        persistence:
+          enabled: false
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: headlamp
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
