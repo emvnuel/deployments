@@ -28,8 +28,8 @@ metadata:
   name: postgres-weekly-backup
   namespace: postgres
 spec:
-  # Schedule: every Sunday at 3 AM UTC
-  schedule: "0 3 * * 0"
+  # Schedule: every Sunday at 3 AM UTC (day 7 is Sunday in this format)
+  schedule: "0 3 * * 7"
   
   backupOwnerReference: self
   
