@@ -110,15 +110,6 @@ spec:
         compression: gzip
         jobs: 2
   
-  # Managed services (optional)
-  managed:
-    roles:
-      - name: readonly_user
-        ensure: present
-        login: true
-        passwordSecret:
-          name: postgres-readonly-user
-  
   # Node maintenance window
   nodeMaintenanceWindow:
     inProgress: false
