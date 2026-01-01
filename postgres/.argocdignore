@@ -1,2 +1,7 @@
 argocd/
 operator/
+# Secrets - managed manually outside of git
+cluster/secrets.yaml
+backup/backup-secrets.yaml
+*.secret.yaml
+*-secrets.yaml

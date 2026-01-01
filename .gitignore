@@ -1,1 +1,6 @@
 .DS_Store
+# PostgreSQL secrets - never commit to git
+postgres/cluster/secrets.yaml
+postgres/backup/backup-secrets.yaml
+postgres/**/*-secrets.yaml
+postgres/**/*.secret.yaml
