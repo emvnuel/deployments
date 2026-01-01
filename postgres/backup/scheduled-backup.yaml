@@ -1,0 +1,41 @@
+# Scheduled backup configuration
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: postgres-daily-backup
+  namespace: postgres
+spec:
+  # Schedule in cron format (daily at 2 AM UTC)
+  schedule: "0 2 * * *"
+  
+  # Backup deadline
+  backupOwnerReference: self
+  
+  # Cluster to backup
+  cluster:
+    name: postgres-cluster
+  
+  # Method: use barmanObjectStore for physical backups
+  method: barmanObjectStore
+  
+  # Suspend schedule (set to true to pause backups)
+  suspend: false
+---
+# Weekly full backup
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: postgres-weekly-backup
+  namespace: postgres
+spec:
+  # Schedule: every Sunday at 3 AM UTC
+  schedule: "0 3 * * 0"
+  
+  backupOwnerReference: self
+  
+  cluster:
+    name: postgres-cluster
+  
+  method: barmanObjectStore
+  
+  suspend: false

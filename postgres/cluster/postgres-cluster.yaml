@@ -1,0 +1,127 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-cluster
+  namespace: postgres
+spec:
+  # High availability: 1 primary + 2 replicas
+  instances: 3
+  
+  # PostgreSQL version
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.2
+  
+  # Primary update strategy
+  primaryUpdateStrategy: unsupervised
+  
+  # Storage configuration
+  storage:
+    size: 20Gi
+    storageClass: ""  # Use cluster default storage class
+  
+  # WAL storage (optional but recommended for performance)
+  walStorage:
+    size: 5Gi
+    storageClass: ""  # Use cluster default storage class
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
+  
+  # Affinity: spread replicas across nodes
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: preferred
+  
+  # PostgreSQL configuration
+  postgresql:
+    parameters:
+      # Memory settings
+      shared_buffers: "512MB"
+      effective_cache_size: "1536MB"
+      maintenance_work_mem: "128MB"
+      work_mem: "16MB"
+      
+      # Checkpoint settings
+      checkpoint_completion_target: "0.9"
+      wal_buffers: "16MB"
+      
+      # Connection settings
+      max_connections: "200"
+      
+      # Query planner
+      random_page_cost: "1.1"
+      effective_io_concurrency: "200"
+      
+      # Logging
+      log_statement: "ddl"
+      log_duration: "on"
+      log_line_prefix: "%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h "
+      log_checkpoints: "on"
+      log_connections: "on"
+      log_disconnections: "on"
+      log_lock_waits: "on"
+      log_min_duration_statement: "1000"  # Log queries > 1 second
+    
+    # Enable pg_stat_statements for query performance monitoring
+    pg_hba:
+      - host all all all scram-sha-256
+  
+  # Bootstrap configuration
+  bootstrap:
+    initdb:
+      database: app_database
+      owner: app_user
+      secret:
+        name: postgres-app-user
+      postInitSQL:
+        - CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+        - CREATE EXTENSION IF NOT EXISTS pgcrypto;
+  
+  # Superuser secret
+  superuserSecret:
+    name: postgres-superuser
+  
+  # Monitoring
+  monitoring:
+    enablePodMonitor: true
+  
+  # Backup configuration
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: "s3://your-bucket-name/postgres-backups/"  # CONFIGURE THIS
+      s3Credentials:
+        accessKeyId:
+          name: backup-s3-credentials
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: backup-s3-credentials
+          key: SECRET_ACCESS_KEY
+      wal:
+        compression: gzip
+        maxParallel: 8
+      data:
+        compression: gzip
+        jobs: 2
+  
+  # Managed services (optional)
+  managed:
+    roles:
+      - name: readonly_user
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-readonly-user
+    services:
+      disabledDefaultServices: []
+  
+  # Node maintenance window
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true

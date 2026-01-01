@@ -1,0 +1,44 @@
+# Example: Connection pooler using PgBouncer
+# Improves performance and connection management
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: postgres-pooler
+  namespace: postgres
+spec:
+  cluster:
+    name: postgres-cluster
+  
+  # Number of pooler instances
+  instances: 3
+  
+  type: rw  # Read-write pooler (for primary)
+  
+  pgbouncer:
+    # PgBouncer configuration
+    poolMode: transaction  # Options: session, transaction, statement
+    parameters:
+      max_client_conn: "1000"
+      default_pool_size: "25"
+      max_db_connections: "100"
+      max_user_connections: "100"
+      reserve_pool_size: "5"
+      reserve_pool_timeout: "5"
+      server_idle_timeout: "600"
+      server_lifetime: "3600"
+      server_connect_timeout: "15"
+      query_timeout: "0"
+      query_wait_timeout: "120"
+  
+  # High availability for pooler
+  template:
+    spec:
+      containers:
+        - name: pgbouncer
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

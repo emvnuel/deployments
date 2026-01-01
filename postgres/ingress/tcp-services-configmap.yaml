@@ -1,0 +1,12 @@
+# ConfigMap for nginx ingress TCP services
+# This exposes PostgreSQL on a specific port through the ingress controller
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  # Format: "<external-port>": "<namespace>/<service-name>:<service-port>"
+  
+  # Expose PostgreSQL primary (read-write) on port 5432
+  5432: "postgres/postgres-cluster-rw:5432"

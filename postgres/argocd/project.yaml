@@ -1,0 +1,101 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: postgres
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: PostgreSQL database infrastructure
+  
+  # Source repositories
+  sourceRepos:
+    - https://github.com/your-org/your-repo.git  # CHANGE THIS
+    - https://ghcr.io/cloudnative-pg/*  # CloudNativePG images
+  
+  # Destination clusters and namespaces
+  destinations:
+    - namespace: postgres
+      server: https://kubernetes.default.svc
+    - namespace: cnpg-system
+      server: https://kubernetes.default.svc
+    - namespace: ingress-nginx
+      server: https://kubernetes.default.svc
+  
+  # Cluster resource allow list
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+  
+  # Namespace resource allow list
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ServiceAccount
+    - group: ''
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: apps
+      kind: DaemonSet
+    - group: batch
+      kind: Job
+    - group: batch
+      kind: CronJob
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: policy
+      kind: PodDisruptionBudget
+    - group: postgresql.cnpg.io
+      kind: Cluster
+    - group: postgresql.cnpg.io
+      kind: Backup
+    - group: postgresql.cnpg.io
+      kind: ScheduledBackup
+    - group: postgresql.cnpg.io
+      kind: Pooler
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor
+    - group: monitoring.coreos.com
+      kind: PodMonitor
+    - group: monitoring.coreos.com
+      kind: PrometheusRule
+  
+  # Deny certain resources
+  namespaceResourceBlacklist: []
+  
+  # Roles for project access control
+  roles:
+    - name: read-only
+      description: Read-only access to postgres project
+      policies:
+        - p, proj:postgres:read-only, applications, get, postgres/*, allow
+      groups:
+        - developers
+    
+    - name: admin
+      description: Admin access to postgres project
+      policies:
+        - p, proj:postgres:admin, applications, *, postgres/*, allow
+      groups:
+        - devops
+        - platform-team

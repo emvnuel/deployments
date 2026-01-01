@@ -1,0 +1,125 @@
+# Grafana Dashboard ConfigMap
+# This dashboard provides PostgreSQL monitoring metrics
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-grafana-dashboard
+  namespace: postgres
+  labels:
+    grafana_dashboard: "1"
+data:
+  postgres-overview.json: |
+    {
+      "dashboard": {
+        "title": "PostgreSQL - CloudNativePG Overview",
+        "panels": [
+          {
+            "title": "Database Size",
+            "type": "graph",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "cnpg_pg_database_size_bytes{namespace=\"postgres\"}"
+              }
+            ]
+          },
+          {
+            "title": "Active Connections",
+            "type": "graph",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "cnpg_backends_total{namespace=\"postgres\"}"
+              }
+            ]
+          },
+          {
+            "title": "Transaction Rate",
+            "type": "graph",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "rate(cnpg_pg_stat_database_xact_commit{namespace=\"postgres\"}[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Replication Lag",
+            "type": "graph",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "cnpg_pg_replication_lag{namespace=\"postgres\"}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+---
+# PrometheusRule for PostgreSQL alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgres-alerts
+  namespace: postgres
+  labels:
+    prometheus: kube-prometheus-stack
+spec:
+  groups:
+    - name: postgresql
+      interval: 30s
+      rules:
+        - alert: PostgreSQLDown
+          expr: cnpg_pg_postmaster_start_time == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL instance is down"
+            description: "PostgreSQL instance {{ $labels.pod }} in namespace {{ $labels.namespace }} is down."
+        
+        - alert: PostgreSQLReplicationLag
+          expr: cnpg_pg_replication_lag > 30
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL replication lag is high"
+            description: "PostgreSQL replication lag on {{ $labels.pod }} is {{ $value }} seconds."
+        
+        - alert: PostgreSQLHighConnections
+          expr: (cnpg_backends_total / cnpg_pg_settings_setting{name="max_connections"}) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL connection usage is high"
+            description: "PostgreSQL {{ $labels.pod }} is using {{ $value | humanizePercentage }} of max connections."
+        
+        - alert: PostgreSQLDiskSpaceLow
+          expr: (cnpg_pg_database_size_bytes / (1024*1024*1024)) > 15
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL database size is growing"
+            description: "Database {{ $labels.datname }} size is {{ $value }}GB."
+        
+        - alert: PostgreSQLBackupFailed
+          expr: time() - cnpg_backup_last_backup_timestamp > 86400
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL backup is outdated"
+            description: "Last successful backup was more than 24 hours ago."
+        
+        - alert: PostgreSQLTooManyDeadTuples
+          expr: cnpg_pg_stat_user_tables_n_dead_tup > 10000
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL table has too many dead tuples"
+            description: "Table {{ $labels.relname }} has {{ $value }} dead tuples. Consider running VACUUM."
