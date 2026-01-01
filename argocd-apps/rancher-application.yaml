@@ -9,8 +9,8 @@ spec:
   project: default
   
   source:
-    repoURL: https://releases.rancher.com/server-charts/stable
-    targetRevision: 2.9.3
+    repoURL: https://releases.rancher.com/server-charts/latest
+    targetRevision: 2.10.2
     chart: rancher
     
     helm:
