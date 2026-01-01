@@ -1,0 +1,91 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rancher
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: https://releases.rancher.com/server-charts/stable
+    targetRevision: 2.9.3
+    chart: rancher
+    
+    helm:
+      values: |
+        hostname: rancher.awesomeapps.cloud
+        
+        replicas: 1
+        
+        bootstrapPassword: ""
+        
+        ingress:
+          enabled: true
+          ingressClassName: nginx
+          tls:
+            source: letsEncrypt
+          extraAnnotations:
+            external-dns.alpha.kubernetes.io/hostname: rancher.awesomeapps.cloud
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+        
+        letsEncrypt:
+          enabled: true
+          email: admin@awesomeapps.cloud
+          environment: production
+          ingress:
+            class: nginx
+        
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        
+        livenessProbe:
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        
+        antiAffinity: preferred
+        
+        auditLog:
+          level: 0
+          maxAge: 10
+          maxBackup: 10
+          maxSize: 100
+        
+        global:
+          cattle:
+            psp:
+              enabled: false
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cattle-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
