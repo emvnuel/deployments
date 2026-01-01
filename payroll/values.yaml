@@ -2,7 +2,7 @@ nameOverride: "payroll"
 replicaCount: 1
 image:
   repository: "myawesomeapps/payroll"
-  tag: "2.0"
+  tag: "3.0"
 service:
   name: "payroll-svc"
   port: 8080
