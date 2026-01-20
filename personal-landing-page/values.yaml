@@ -2,7 +2,7 @@ nameOverride: "personal-landing-page"
 replicaCount: 1
 image:
   repository: "myawesomeapps/personal-landing-page"
-  tag: "1.5"
+  tag: "1.6"
 service:
   name: "personal-landing-page-svc"
   port: 80
