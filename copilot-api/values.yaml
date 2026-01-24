@@ -1,0 +1,34 @@
+nameOverride: "copilot-api"
+replicaCount: 1
+
+image:
+  repository: "myawesomeapps/copilot-api"
+  tag: "1.0"
+
+service:
+  name: "copilot-api-svc"
+  port: 80
+  targetPort: 4141
+  type: ClusterIP
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+probes:
+  enabled: false
+
+envFrom:
+  - secretRef:
+      name: copilot-api-secrets
+
+ingress:
+  enabled: true
+  hostnames: "llm.awesomeapps.cloud"
+  cloudflare_proxied: true
+  tls:
+    enabled: true

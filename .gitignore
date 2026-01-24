@@ -4,3 +4,6 @@ postgres/cluster/secrets.yaml
 postgres/backup/backup-secrets.yaml
 postgres/**/*-secrets.yaml
 postgres/**/*.secret.yaml
+
+# Copilot API secrets
+copilot-api/secrets.yaml
