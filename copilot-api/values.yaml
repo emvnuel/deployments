@@ -1,34 +1,38 @@
-nameOverride: "copilot-api"
-replicaCount: 1
+common-chart:
+  # -- Copilot API deployment using common-chart
+  nameOverride: "copilot-api"
+  replicaCount: 1
 
-image:
-  repository: "myawesomeapps/copilot-api"
-  tag: "1.0"
+  image:
+    repository: "myawesomeapps/copilot-api"
+    tag: "1.0"
 
-service:
-  name: "copilot-api-svc"
-  port: 80
-  targetPort: 4141
-  type: ClusterIP
+  service:
+    name: "copilot-api-svc"
+    port: 80
+    targetPort: 4141
+    type: ClusterIP
 
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 
-probes:
-  enabled: false
+  # -- Disable probes until health endpoint is configured
+  probes:
+    enabled: false
 
-envFrom:
-  - secretRef:
-      name: copilot-api-secrets
+  # -- Load secrets from Kubernetes Secret
+  envFrom:
+    - secretRef:
+        name: copilot-api-secrets
 
-ingress:
-  enabled: true
-  hostnames: "llm.awesomeapps.cloud"
-  cloudflare_proxied: true
-  tls:
+  ingress:
     enabled: true
+    hostnames: "llm.awesomeapps.cloud"
+    cloudflare_proxied: true
+    tls:
+      enabled: true

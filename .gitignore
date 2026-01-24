@@ -7,3 +7,7 @@ postgres/**/*.secret.yaml
 
 # Copilot API secrets
 copilot-api/secrets.yaml
+
+# Helm charts
+charts/
+*.tgz
