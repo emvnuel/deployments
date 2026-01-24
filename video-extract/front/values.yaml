@@ -1,19 +1,20 @@
-nameOverride: "video-extract-frontend"
-replicaCount: 1
-image:
-  repository: "myawesomeapps/video-extract"
-  tag: "1.1"
-service:
-  name: "video-extract-frontend-svc"
-  port: 80
-  targetPort: 80
-resources:
-  limits:
-    cpu: 100m
-    memory: 512Mi
-ingress:
-  enabled: true
-  hostnames: "video-extract.awesomeapps.cloud"
-  cloudflare_proxied: true
-  tls:
+common-chart:
+  nameOverride: "video-extract-frontend"
+  replicaCount: 1
+  image:
+    repository: "myawesomeapps/video-extract"
+    tag: "1.1"
+  service:
+    name: "video-extract-frontend-svc"
+    port: 80
+    targetPort: 80
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+  ingress:
     enabled: true
+    hostnames: "video-extract.awesomeapps.cloud"
+    cloudflare_proxied: true
+    tls:
+      enabled: true

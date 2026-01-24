@@ -1,20 +1,21 @@
-nameOverride: "landing-page"
-replicaCount: 1
-image:
-  repository: "myawesomeapps/landing-page"
-  tag: "1.1"
-service:
-  name: "landing-page-svc"
-  port: 80
-  targetPort: 3000
-  type: ClusterIP
-resources:
-  limits:
-    cpu: 100m
-    memory: 512Mi
-ingress:
-  enabled: true
-  hostnames: "awesomeapps.cloud,www.awesomeapps.cloud,www1.awesomeapps.cloud"
-  cloudflare_proxied: true
-  tls:
+common-chart:
+  nameOverride: "landing-page"
+  replicaCount: 1
+  image:
+    repository: "myawesomeapps/landing-page"
+    tag: "1.1"
+  service:
+    name: "landing-page-svc"
+    port: 80
+    targetPort: 3000
+    type: ClusterIP
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+  ingress:
     enabled: true
+    hostnames: "awesomeapps.cloud,www.awesomeapps.cloud,www1.awesomeapps.cloud"
+    cloudflare_proxied: true
+    tls:
+      enabled: true

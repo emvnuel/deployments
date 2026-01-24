@@ -1,20 +1,21 @@
-nameOverride: "payroll-front"
-replicaCount: 1
-image:
-  repository: "myawesomeapps/payroll-front"
-  tag: "2.0"
-service:
-  name: "payroll-front-svc"
-  port: 80
-  targetPort: 3000
-  type: ClusterIP
-resources:
-  limits:
-    cpu: 100m
-    memory: 512Mi
-ingress:
-  enabled: true
-  hostnames: "salario.ninja,www.salario.ninja"
-  cloudflare_proxied: true
-  tls:
+common-chart:
+  nameOverride: "payroll-front"
+  replicaCount: 1
+  image:
+    repository: "myawesomeapps/payroll-front"
+    tag: "2.0"
+  service:
+    name: "payroll-front-svc"
+    port: 80
+    targetPort: 3000
+    type: ClusterIP
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+  ingress:
     enabled: true
+    hostnames: "salario.ninja,www.salario.ninja"
+    cloudflare_proxied: true
+    tls:
+      enabled: true

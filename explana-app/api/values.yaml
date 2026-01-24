@@ -1,28 +1,29 @@
-nameOverride: "explana-api"
-replicaCount: 1
-image:
-  repository: "myawesomeapps/explana-api"
-  tag: "1.0"
-service:
-  name: "explana-api-svc"
-  port: 80
-  targetPort: 8080
-  type: ClusterIP
-resources:
-  limits:
-    cpu: 250m
-    memory: 256Mi
-  requests:
-    cpu: 250m
-    memory: 256Mi
-env:
-  - name: MONGO_HOST
-    value: mongo-svc
-envFrom:
-  - configMapRef:
-      name: db-configmap
-ingress:
-  enabled: true
-  hostnames: "api.explana.awesomeapps.cloud"
-  tls:
+common-chart:
+  nameOverride: "explana-api"
+  replicaCount: 1
+  image:
+    repository: "myawesomeapps/explana-api"
+    tag: "1.0"
+  service:
+    name: "explana-api-svc"
+    port: 80
+    targetPort: 8080
+    type: ClusterIP
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  env:
+    - name: MONGO_HOST
+      value: mongo-svc
+  envFrom:
+    - configMapRef:
+        name: db-configmap
+  ingress:
     enabled: true
+    hostnames: "api.explana.awesomeapps.cloud"
+    tls:
+      enabled: true
