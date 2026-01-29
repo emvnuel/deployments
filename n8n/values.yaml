@@ -5,29 +5,28 @@ image:
   tag: 1.123.6
 
 # Ingress deployment for n8n.
-main:
-  config:
-    n8n:
-      hide_usage_page: true
-    extraEnv:
-      GENERIC_TIMEZONE: "America/Sao_Paulo"
-  secret:
-    n8n:
-      encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
-  resources:
-    limits:
-      memory: 2048Mi
-    requests:
-      memory: 512Mi
-  persistence:
-    # If true, use a Persistent Volume Claim, If false, use emptyDir
-    type: dynamic
-    enabled: true
-    storageClassName: local-path
-    accessModes:
-      - ReadWriteOnce
-    # Persistent Volume size
-    size: 1Gi
+config:
+  n8n:
+    hide_usage_page: true
+  extraEnv:
+    GENERIC_TIMEZONE: "America/Sao_Paulo"
+secret:
+  n8n:
+    encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
+resources:
+  limits:
+    memory: 2048Mi
+  requests:
+    memory: 512Mi
+persistence:
+  # If true, use a Persistent Volume Claim, If false, use emptyDir
+  type: dynamic
+  enabled: true
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  # Persistent Volume size
+  size: 1Gi
 
 ingress:
   enabled: true
