@@ -3,26 +3,29 @@ kind: Cluster
 metadata:
   name: postgres-cluster
   namespace: postgres
+  annotations:
+    helm.sh/resource-policy: keep
+    argocd.argoproj.io/sync-options: Delete=false
 spec:
   # Reduced instances: 1 primary + 1 replica for lighter deployment
   instances: 2
-  
+
   # PostgreSQL version
   imageName: ghcr.io/cloudnative-pg/postgresql:16.2
-  
+
   # Primary update strategy
   primaryUpdateStrategy: unsupervised
-  
+
   # Storage configuration (reduced for lighter deployment)
   storage:
     size: 10Gi
     storageClass: "local-path"
-  
+
   # WAL storage (optional but recommended for performance)
   walStorage:
     size: 2Gi
     storageClass: "local-path"
-  
+
   # Resource limits (reduced for lighter deployment)
   resources:
     requests:
@@ -31,13 +34,13 @@ spec:
     limits:
       memory: "1Gi"
       cpu: "1000m"
-  
+
   # Affinity: spread replicas across nodes
   affinity:
     enablePodAntiAffinity: true
     topologyKey: kubernetes.io/hostname
     podAntiAffinityType: preferred
-  
+
   # PostgreSQL configuration
   postgresql:
     parameters:
@@ -46,18 +49,18 @@ spec:
       effective_cache_size: "768MB"
       maintenance_work_mem: "64MB"
       work_mem: "8MB"
-      
+
       # Checkpoint settings
       checkpoint_completion_target: "0.9"
       wal_buffers: "8MB"
-      
+
       # Connection settings (reduced)
       max_connections: "100"
-      
+
       # Query planner
       random_page_cost: "1.1"
       effective_io_concurrency: "200"
-      
+
       # Logging
       log_statement: "ddl"
       log_duration: "on"
@@ -66,12 +69,12 @@ spec:
       log_connections: "on"
       log_disconnections: "on"
       log_lock_waits: "on"
-      log_min_duration_statement: "1000"  # Log queries > 1 second
-    
+      log_min_duration_statement: "1000" # Log queries > 1 second
+
     # Enable pg_stat_statements for query performance monitoring
     pg_hba:
       - host all all all scram-sha-256
-  
+
   # Bootstrap configuration
   bootstrap:
     initdb:
@@ -82,20 +85,20 @@ spec:
       postInitSQL:
         - CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
         - CREATE EXTENSION IF NOT EXISTS pgcrypto;
-  
+
   # Superuser secret
   superuserSecret:
     name: postgres-superuser
-  
+
   # Monitoring
   monitoring:
     enablePodMonitor: true
-  
+
   # Backup configuration
   backup:
     retentionPolicy: "30d"
     barmanObjectStore:
-      destinationPath: "s3://your-bucket-name/postgres-backups/"  # CONFIGURE THIS
+      destinationPath: "s3://your-bucket-name/postgres-backups/" # CONFIGURE THIS
       s3Credentials:
         accessKeyId:
           name: backup-s3-credentials
@@ -109,7 +112,7 @@ spec:
       data:
         compression: gzip
         jobs: 2
-  
+
   # Node maintenance window
   nodeMaintenanceWindow:
     inProgress: false
