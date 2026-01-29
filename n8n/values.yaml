@@ -1,4 +1,3 @@
-
 n8n:
   fullnameOverride: n8n-app
 
@@ -11,20 +10,21 @@ n8n:
     config:
       n8n:
         hide_usage_page: true
-      extraEnv:
-        GENERIC_TIMEZONE: "America/Sao_Paulo"
-      n8n:
-        encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V" 
-    # Database configuration
-    db:
-      type: postgresdb
-    externalPostgresql:
-      host: postgres-cluster-rw.postgres.svc.cluster.local
-      port: 5432
-      database: app_database
-      username: app_user
-      existingSecret: n8n-db-secret
-      existingSecretPasswordKey: password
+        encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
+      db:
+        type: postgresdb
+        postgresdb:
+          host: postgres-cluster-rw.postgres.svc.cluster.local
+          port: 5432
+          database: app_database
+          user: app_user
+    extraEnv:
+      GENERIC_TIMEZONE: "America/Sao_Paulo"
+      DB_POSTGRESDB_PASSWORD:
+        valueFrom:
+          secretKeyRef:
+            name: n8n-db-secret
+            key: password
     resources:
       limits:
         memory: 2048Mi
