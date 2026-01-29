@@ -2,7 +2,7 @@ fullnameOverride: n8n-app
 
 image:
   repository: n8nio/n8n
-  tag: 2.4.4
+  tag: 1.123.6
 
 # Ingress deployment for n8n.
 main:
