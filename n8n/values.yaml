@@ -2,7 +2,7 @@ fullnameOverride: n8n-app
 
 image:
   repository: n8nio/n8n
-  tag: 1.123.6
+  tag: 2.4.6
 
 # Ingress deployment for n8n.
 main:
@@ -11,9 +11,18 @@ main:
       hide_usage_page: true
     extraEnv:
       GENERIC_TIMEZONE: "America/Sao_Paulo"
-  secret:
     n8n:
-      encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
+      encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V" 
+  # Database configuration
+  db:
+    type: postgresdb
+  externalPostgresql:
+    host: postgres-cluster-rw.postgres.svc.cluster.local
+    port: 5432
+    database: app_database
+    username: app_user
+    existingSecret: n8n-db-secret
+    existingSecretPasswordKey: password
   resources:
     limits:
       memory: 2048Mi
