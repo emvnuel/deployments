@@ -1,60 +1,65 @@
-fullnameOverride: n8n-app
 
-image:
-  repository: n8nio/n8n
-  tag: 2.4.6
+n8n:
+  fullnameOverride: n8n-app
 
-# Ingress deployment for n8n.
-main:
-  config:
-    n8n:
-      hide_usage_page: true
-    extraEnv:
-      GENERIC_TIMEZONE: "America/Sao_Paulo"
-    n8n:
-      encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V" 
-  # Database configuration
-  db:
-    type: postgresdb
-  externalPostgresql:
-    host: postgres-cluster-rw.postgres.svc.cluster.local
-    port: 5432
-    database: app_database
-    username: app_user
-    existingSecret: n8n-db-secret
-    existingSecretPasswordKey: password
-  resources:
-    limits:
-      memory: 2048Mi
-    requests:
-      memory: 512Mi
-  persistence:
-    # If true, use a Persistent Volume Claim, If false, use emptyDir
-    type: dynamic
+  image:
+    repository: n8nio/n8n
+    tag: 2.4.6
+
+  # Ingress deployment for n8n.
+  main:
+    config:
+      n8n:
+        hide_usage_page: true
+      extraEnv:
+        GENERIC_TIMEZONE: "America/Sao_Paulo"
+      n8n:
+        encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V" 
+    # Database configuration
+    db:
+      type: postgresdb
+    externalPostgresql:
+      host: postgres-cluster-rw.postgres.svc.cluster.local
+      port: 5432
+      database: app_database
+      username: app_user
+      existingSecret: n8n-db-secret
+      existingSecretPasswordKey: password
+    resources:
+      limits:
+        memory: 2048Mi
+      requests:
+        memory: 512Mi
+    persistence:
+      # If true, use a Persistent Volume Claim, If false, use emptyDir
+      type: dynamic
+      enabled: true
+      annotations:
+        helm.sh/resource-policy: keep
+        argocd.argoproj.io/sync-options: Prune=false
+      storageClassName: local-path
+      accessModes:
+        - ReadWriteOnce
+      # Persistent Volume size
+      size: 1Gi
+
+  ingress:
     enabled: true
-    storageClassName: local-path
-    accessModes:
-      - ReadWriteOnce
-    # Persistent Volume size
-    size: 1Gi
-
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: n8n.awesomeapps.cloud
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  hosts:
-    - host: n8n.awesomeapps.cloud
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: n8n-ingress-tls
-      hosts:
-        - n8n.awesomeapps.cloud
+    className: nginx
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: n8n.awesomeapps.cloud
+      external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-buffering: "off"
+      nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: n8n.awesomeapps.cloud
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: n8n-ingress-tls
+        hosts:
+          - n8n.awesomeapps.cloud
