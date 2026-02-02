@@ -10,7 +10,6 @@ n8n:
     config:
       n8n:
         hide_usage_page: true
-        encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
       db:
         type: postgresdb
         postgresdb:
@@ -20,6 +19,11 @@ n8n:
           user: app_user
     extraEnv:
       GENERIC_TIMEZONE: "America/Sao_Paulo"
+      N8N_ENCRYPTION_KEY:
+        valueFrom:
+          secretKeyRef:
+            name: n8n-app-secret
+            key: encryption-key
       DB_POSTGRESDB_PASSWORD:
         valueFrom:
           secretKeyRef:
@@ -37,7 +41,7 @@ n8n:
       annotations:
         helm.sh/resource-policy: keep
         argocd.argoproj.io/sync-options: Prune=false
-      storageClassName: local-path
+      storageClass: local-path
       accessModes:
         - ReadWriteOnce
       # Persistent Volume size
