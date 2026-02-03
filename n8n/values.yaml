@@ -1,68 +1,76 @@
-fullnameOverride: n8n-app
+n8n:
+  fullnameOverride: n8n-app
 
-image:
-  repository: n8nio/n8n
-  tag: 2.4.6
+  image:
+    repository: n8nio/n8n
+    tag: "2.7.0"
 
-# Ingress deployment for n8n.
-main:
-  config:
-    n8n:
-      hide_usage_page: true
-    db:
-      type: postgresdb
-      postgresdb:
-        host: postgres-cluster-rw.postgres.svc.cluster.local
-        port: 5432
-        database: app_database
-        user: app_user
-  extraEnv:
-    GENERIC_TIMEZONE: "America/Sao_Paulo"
-    N8N_ENCRYPTION_KEY:
-      valueFrom:
-        secretKeyRef:
-          name: n8n-app-secret
-          key: encryption-key
-    DB_POSTGRESDB_PASSWORD:
-      valueFrom:
-        secretKeyRef:
-          name: n8n-db-secret
-          key: password
-  resources:
-    limits:
-      memory: 2048Mi
-    requests:
-      memory: 512Mi
-  persistence:
-    # If true, use a Persistent Volume Claim, If false, use emptyDir
-    type: dynamic
+  # Ingress configuration
+  ingress:
     enabled: true
+    className: nginx
     annotations:
-      helm.sh/resource-policy: keep
-      argocd.argoproj.io/sync-options: Prune=false
-    storageClass: local-path
-    accessModes:
-      - ReadWriteOnce
-    # Persistent Volume size
-    size: 1Gi
+      external-dns.alpha.kubernetes.io/hostname: n8n.awesomeapps.cloud
+      external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-buffering: "off"
+      nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: n8n.awesomeapps.cloud
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: n8n-ingress-tls
+        hosts:
+          - n8n.awesomeapps.cloud
 
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: n8n.awesomeapps.cloud
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  hosts:
-    - host: n8n.awesomeapps.cloud
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: n8n-ingress-tls
-      hosts:
-        - n8n.awesomeapps.cloud
+  # Main n8n application configuration
+  main:
+    # n8n configuration - converted to environment variables
+    config:
+      n8n:
+        hide_usage_page: true
+      db:
+        type: postgresdb
+        postgresdb:
+          host: postgres-cluster-rw.postgres.svc.cluster.local
+          port: 5432
+          database: app_database
+          user: app_user
+
+    # Secrets - stored in Kubernetes secret
+    secret:
+      n8n:
+        encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
+
+    # Extra environment variables
+    extraEnv:
+      GENERIC_TIMEZONE:
+        value: "America/Sao_Paulo"
+      DB_POSTGRESDB_PASSWORD:
+        valueFrom:
+          secretKeyRef:
+            name: n8n-db-secret
+            key: password
+
+    # Resource limits and requests
+    resources:
+      limits:
+        memory: 2048Mi
+      requests:
+        memory: 512Mi
+
+    # Persistence configuration
+    persistence:
+      enabled: true
+      type: dynamic
+      storageClass: local-path
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+      annotations:
+        helm.sh/resource-policy: keep
+        argocd.argoproj.io/sync-options: Prune=false
