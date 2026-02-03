@@ -1,0 +1,10 @@
+apiVersion: v2
+name: video-extract-api
+description: Video Extract API deployment
+type: application
+version: 1.0.0
+appVersion: "1.0"
+dependencies:
+  - name: common-chart
+    version: 0.1.0
+    repository: "file://../../common-chart"
