@@ -41,15 +41,15 @@ n8n:
           database: app_database
           user: app_user
 
-    # Secrets - stored in Kubernetes secret
-    secret:
-      n8n:
-        encryption_key: "Rp7OUWycZxaxNvA9zcA9xQaJaKdg9Y2V"
-
-    # Extra environment variables
+    # Extra environment variables (secrets referenced from external K8s secrets)
     extraEnv:
       GENERIC_TIMEZONE:
         value: "America/Sao_Paulo"
+      N8N_ENCRYPTION_KEY:
+        valueFrom:
+          secretKeyRef:
+            name: n8n-app-secret
+            key: encryption-key
       DB_POSTGRESDB_PASSWORD:
         valueFrom:
           secretKeyRef:
