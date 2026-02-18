@@ -26,9 +26,9 @@ spec:
       reserve_pool_timeout: "5"
       server_idle_timeout: "600"
       server_lifetime: "3600"
-      server_connect_timeout: "15"
+      server_connect_timeout: "60"
       query_timeout: "0"
-      query_wait_timeout: "120"
+      query_wait_timeout: "600"
   
   # High availability for pooler
   template:
