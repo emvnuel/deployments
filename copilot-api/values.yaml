@@ -5,7 +5,7 @@ common-chart:
 
   image:
     repository: "myawesomeapps/copilot-api"
-    tag: "2.1"
+    tag: "1.6"
 
   service:
     name: "copilot-api-svc"
