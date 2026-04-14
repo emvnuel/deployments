@@ -24,6 +24,6 @@ common-chart:
         name: db-configmap
   ingress:
     enabled: true
-    hostnames: "api.explana.awesomeapps.cloud"
+    hostnames: "api.explana.gambiarra.space"
     tls:
       enabled: true

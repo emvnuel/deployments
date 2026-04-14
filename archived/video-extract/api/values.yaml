@@ -35,6 +35,6 @@ common-chart:
     periodSeconds: 10
   ingress:
     enabled: true
-    hostnames: "api.video-extract.awesomeapps.cloud"
+    hostnames: "api.video-extract.gambiarra.space"
     tls:
       enabled: true

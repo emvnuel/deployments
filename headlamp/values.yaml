@@ -10,7 +10,7 @@ ingress:
   ingressClassName: nginx
   annotations:
     # External DNS for automatic DNS record creation
-    external-dns.alpha.kubernetes.io/hostname: headlamp.awesomeapps.cloud
+    external-dns.alpha.kubernetes.io/hostname: headlamp.gambiarra.space
     # Cloudflare proxy enabled (orange cloud)
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     # Cert-manager for automatic TLS certificates
@@ -20,14 +20,14 @@ ingress:
     # Force HTTPS redirect
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   hosts:
-    - host: headlamp.awesomeapps.cloud
+    - host: headlamp.gambiarra.space
       paths:
         - path: /
           type: ImplementationSpecific
   tls:
     - secretName: headlamp-tls
       hosts:
-        - headlamp.awesomeapps.cloud
+        - headlamp.gambiarra.space
 
 # Resource limits
 resources:

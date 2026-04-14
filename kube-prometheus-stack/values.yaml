@@ -37,14 +37,14 @@ prometheus:
     enabled: true
     ingressClassName: nginx
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: prometheus.awesomeapps.cloud
+      external-dns.alpha.kubernetes.io/hostname: prometheus.gambiarra.space
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     hosts:
-      - prometheus.awesomeapps.cloud
+      - prometheus.gambiarra.space
     tls:
       - secretName: prometheus-tls
         hosts:
-          - prometheus.awesomeapps.cloud
+          - prometheus.gambiarra.space
 
 # Grafana Configuration
 grafana:
@@ -68,14 +68,14 @@ grafana:
     enabled: true
     ingressClassName: nginx
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: grafana.awesomeapps.cloud
+      external-dns.alpha.kubernetes.io/hostname: grafana.gambiarra.space
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     hosts:
-      - grafana.awesomeapps.cloud
+      - grafana.gambiarra.space
     tls:
       - secretName: grafana-tls
         hosts:
-          - grafana.awesomeapps.cloud
+          - grafana.gambiarra.space
   defaultDashboardsEnabled: true
   defaultDashboardsTimezone: UTC
   sidecar:
@@ -112,18 +112,18 @@ alertmanager:
     enabled: true
     ingressClassName: nginx
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: alertmanager.awesomeapps.cloud
+      external-dns.alpha.kubernetes.io/hostname: alertmanager.gambiarra.space
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     hosts:
-      - alertmanager.awesomeapps.cloud
+      - alertmanager.gambiarra.space
     tls:
       - secretName: alertmanager-tls
         hosts:
-          - alertmanager.awesomeapps.cloud
+          - alertmanager.gambiarra.space
   config:
     global:
       smtp_smarthost: 'localhost:587'
-      smtp_from: 'alertmanager@awesomeapps.cloud'
+      smtp_from: 'alertmanager@gambiarra.space'
     route:
       group_by: ['alertname']
       group_wait: 10s

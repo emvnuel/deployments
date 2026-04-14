@@ -14,7 +14,7 @@ common-chart:
       memory: 512Mi
   ingress:
     enabled: true
-    hostnames: "video-extract.awesomeapps.cloud"
+    hostnames: "video-extract.gambiarra.space"
     cloudflare_proxied: true
     tls:
       enabled: true

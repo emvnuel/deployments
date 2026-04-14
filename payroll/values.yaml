@@ -18,7 +18,7 @@ common-chart:
         name: payroll-config
   ingress:
     enabled: true
-    hostnames: "payroll.awesomeapps.cloud"
+    hostnames: "payroll.gambiarra.space"
     extraAnnotations:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"

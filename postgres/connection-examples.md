@@ -1,15 +1,15 @@
-# PostgreSQL Connection Examples for awesomeapps.cloud
+# PostgreSQL Connection Examples for gambiarra.space
 
 ## Connection String Format
 
 ```
-postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database
+postgresql://app_user:password@postgres.gambiarra.space:5432/app_database
 ```
 
 ## Connection Parameters
 
 ```
-Host: postgres.awesomeapps.cloud
+Host: postgres.gambiarra.space
 Port: 5432
 Database: app_database
 Username: app_user
@@ -26,12 +26,12 @@ import psycopg2
 
 # Using connection string
 conn = psycopg2.connect(
-    "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database"
+    "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database"
 )
 
 # Or using parameters
 conn = psycopg2.connect(
-    host="postgres.awesomeapps.cloud",
+    host="postgres.gambiarra.space",
     port=5432,
     database="app_database",
     user="app_user",
@@ -51,12 +51,12 @@ const { Client } = require('pg');
 
 // Using connection string
 const client = new Client({
-  connectionString: 'postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database'
+  connectionString: 'postgresql://app_user:password@postgres.gambiarra.space:5432/app_database'
 });
 
 // Or using parameters
 const client = new Client({
-  host: 'postgres.awesomeapps.cloud',
+  host: 'postgres.gambiarra.space',
   port: 5432,
   database: 'app_database',
   user: 'app_user',
@@ -86,7 +86,7 @@ func main() {
     
     // Using connection string
     conn, err := pgx.Connect(ctx, 
-        "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database")
+        "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database")
     if err != nil {
         panic(err)
     }
@@ -111,7 +111,7 @@ import java.sql.Statement;
 
 public class PostgresExample {
     public static void main(String[] args) {
-        String url = "jdbc:postgresql://postgres.awesomeapps.cloud:5432/app_database";
+        String url = "jdbc:postgresql://postgres.gambiarra.space:5432/app_database";
         String user = "app_user";
         String password = "your-password";
         
@@ -135,11 +135,11 @@ public class PostgresExample {
 require 'pg'
 
 # Using connection string
-conn = PG.connect('postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database')
+conn = PG.connect('postgresql://app_user:password@postgres.gambiarra.space:5432/app_database')
 
 # Or using parameters
 conn = PG::Connection.new(
-  host: 'postgres.awesomeapps.cloud',
+  host: 'postgres.gambiarra.space',
   port: 5432,
   dbname: 'app_database',
   user: 'app_user',
@@ -156,7 +156,7 @@ conn.close
 ```php
 <?php
 try {
-    $dsn = "pgsql:host=postgres.awesomeapps.cloud;port=5432;dbname=app_database";
+    $dsn = "pgsql:host=postgres.gambiarra.space;port=5432;dbname=app_database";
     $pdo = new PDO($dsn, 'app_user', 'your-password');
     
     $stmt = $pdo->query('SELECT version()');
@@ -173,7 +173,7 @@ try {
 ```csharp
 using Npgsql;
 
-var connString = "Host=postgres.awesomeapps.cloud;Port=5432;Database=app_database;Username=app_user;Password=your-password";
+var connString = "Host=postgres.gambiarra.space;Port=5432;Database=app_database;Username=app_user;Password=your-password";
 
 await using var conn = new NpgsqlConnection(connString);
 await conn.OpenAsync();
@@ -192,12 +192,12 @@ while (await reader.ReadAsync())
 Set these in your application environment:
 
 ```bash
-export DB_HOST="postgres.awesomeapps.cloud"
+export DB_HOST="postgres.gambiarra.space"
 export DB_PORT="5432"
 export DB_NAME="app_database"
 export DB_USER="app_user"
 export DB_PASSWORD="your-password"
-export DATABASE_URL="postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database"
+export DATABASE_URL="postgresql://app_user:password@postgres.gambiarra.space:5432/app_database"
 ```
 
 ## Docker Compose Example
@@ -209,9 +209,9 @@ services:
   app:
     image: your-app:latest
     environment:
-      - DATABASE_URL=postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database
+      - DATABASE_URL=postgresql://app_user:password@postgres.gambiarra.space:5432/app_database
       # Or separate variables
-      - DB_HOST=postgres.awesomeapps.cloud
+      - DB_HOST=postgres.gambiarra.space
       - DB_PORT=5432
       - DB_NAME=app_database
       - DB_USER=app_user
@@ -233,7 +233,7 @@ spec:
         image: myapp:latest
         env:
           - name: DB_HOST
-            value: "postgres.awesomeapps.cloud"
+            value: "postgres.gambiarra.space"
           - name: DB_PORT
             value: "5432"
           - name: DB_NAME
@@ -256,32 +256,32 @@ spec:
 
 ```bash
 # Simple connection
-psql -h postgres.awesomeapps.cloud -p 5432 -U app_user -d app_database
+psql -h postgres.gambiarra.space -p 5432 -U app_user -d app_database
 
 # With connection string
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database"
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database"
 
 # Test query
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database" \
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database" \
   -c "SELECT version();"
 ```
 
 ### Using pg_isready
 
 ```bash
-pg_isready -h postgres.awesomeapps.cloud -p 5432 -U app_user
+pg_isready -h postgres.gambiarra.space -p 5432 -U app_user
 ```
 
 ### Using telnet (test port open)
 
 ```bash
-telnet postgres.awesomeapps.cloud 5432
+telnet postgres.gambiarra.space 5432
 ```
 
 ### Using nc (netcat)
 
 ```bash
-nc -zv postgres.awesomeapps.cloud 5432
+nc -zv postgres.gambiarra.space 5432
 ```
 
 ## SSL/TLS Connection (Production)
@@ -289,7 +289,7 @@ nc -zv postgres.awesomeapps.cloud 5432
 For production, always use SSL:
 
 ```bash
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database?sslmode=require"
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database?sslmode=require"
 ```
 
 Connection parameters with SSL:
@@ -303,7 +303,7 @@ Connection parameters with SSL:
 For applications, connect via the pooler instead:
 
 ```
-Host: postgres.awesomeapps.cloud
+Host: postgres.gambiarra.space
 Port: 5432
 ```
 

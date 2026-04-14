@@ -37,7 +37,7 @@ Type: A
 Value: 137.131.136.132
 TTL: 300
 
-# Result: postgres.awesomeapps.cloud → 137.131.136.132
+# Result: postgres.gambiarra.space → 137.131.136.132
 ```
 
 ## Verification
@@ -56,7 +56,7 @@ kubectl get svc ingress-nginx-controller -n ingress-nginx
 
 ```bash
 # Using psql with domain
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database"
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database"
 
 # Or with IP directly
 psql "postgresql://app_user:password@<EXTERNAL-IP>:5432/app_database"
@@ -69,7 +69,7 @@ psql "postgresql://app_user:password@<EXTERNAL-IP>:5432/app_database"
 import psycopg2
 
 conn = psycopg2.connect(
-    host="postgres.awesomeapps.cloud",
+    host="postgres.gambiarra.space",
     port=5432,
     database="app_database",
     user="app_user",
@@ -82,7 +82,7 @@ conn = psycopg2.connect(
 const { Client } = require('pg');
 
 const client = new Client({
-  host: 'postgres.awesomeapps.cloud',
+  host: 'postgres.gambiarra.space',
   port: 5432,
   database: 'app_database',
   user: 'app_user',
@@ -111,7 +111,7 @@ Type: A
 Value: <EXTERNAL-IP from LoadBalancer>
 TTL: 300
 
-# This creates: postgres.awesomeapps.cloud → <EXTERNAL-IP>
+# This creates: postgres.gambiarra.space → <EXTERNAL-IP>
 ```
 
 Example commands to get your external IP:
@@ -121,7 +121,7 @@ kubectl get svc postgres-external -n ingress-nginx -o jsonpath='{.status.loadBal
 
 Then connect:
 ```bash
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database"
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database"
 ```
 
 ### Option 2: NodePort (if LoadBalancer not available)

@@ -30,7 +30,7 @@ All these IPs now accept PostgreSQL connections on port 5432.
 Point your subdomain to any of the external IPs (I recommend using the first one):
 
 ```
-postgres.awesomeapps.cloud  A  137.131.136.132
+postgres.gambiarra.space  A  137.131.136.132
 ```
 
 Example DNS record in your provider (Cloudflare, Route53, etc.):
@@ -46,18 +46,18 @@ TTL: 300
 Once DNS is configured:
 
 ```bash
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database"
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database"
 ```
 
 ## Example Connection String
 
 ```
-postgresql://app_user:yourpassword@postgres.awesomeapps.cloud:5432/app_database
+postgresql://app_user:yourpassword@postgres.gambiarra.space:5432/app_database
 ```
 
 Or specify each parameter:
 ```
-Host: postgres.awesomeapps.cloud
+Host: postgres.gambiarra.space
 Port: 5432
 Database: app_database
 Username: app_user
@@ -73,10 +73,10 @@ Check that everything is working:
 kubectl get svc ingress-nginx-controller -n ingress-nginx
 
 # Test port is open (once DNS is set)
-telnet postgres.awesomeapps.cloud 5432
+telnet postgres.gambiarra.space 5432
 
 # Or test connection
-psql "postgresql://app_user:password@postgres.awesomeapps.cloud:5432/app_database" -c "SELECT version();"
+psql "postgresql://app_user:password@postgres.gambiarra.space:5432/app_database" -c "SELECT version();"
 ```
 
 ## Security Note

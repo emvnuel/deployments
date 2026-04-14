@@ -10,7 +10,7 @@ n8n:
     enabled: true
     className: nginx
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: n8n.awesomeapps.cloud
+      external-dns.alpha.kubernetes.io/hostname: n8n.gambiarra.space
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
       cert-manager.io/cluster-issuer: letsencrypt-prod
       nginx.ingress.kubernetes.io/proxy-body-size: "0"
@@ -18,14 +18,14 @@ n8n:
       nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - host: n8n.awesomeapps.cloud
+      - host: n8n.gambiarra.space
         paths:
           - path: /
             pathType: Prefix
     tls:
       - secretName: n8n-ingress-tls
         hosts:
-          - n8n.awesomeapps.cloud
+          - n8n.gambiarra.space
 
   # Main n8n application configuration
   main:

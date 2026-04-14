@@ -32,7 +32,7 @@ common-chart:
 
   ingress:
     enabled: true
-    hostnames: "llm.awesomeapps.cloud"
+    hostnames: "llm.gambiarra.space"
     cloudflare_proxied: true
     tls:
       enabled: true

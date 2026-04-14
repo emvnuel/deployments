@@ -15,7 +15,7 @@ common-chart:
       memory: 512Mi
   ingress:
     enabled: true
-    hostnames: "explana.awesomeapps.cloud"
+    hostnames: "explana.gambiarra.space"
     cloudflare_proxied: true
     tls:
       enabled: true
