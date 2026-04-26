@@ -7,7 +7,7 @@ common-chart:
   service:
     name: "landing-page-svc"
     port: 80
-    targetPort: 3000
+    targetPort: 8080
     type: ClusterIP
   resources:
     limits:
