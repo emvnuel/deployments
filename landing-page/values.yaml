@@ -19,3 +19,5 @@ common-chart:
     cloudflare_proxied: true
     tls:
       enabled: true
+  probes:
+    enabled: false
