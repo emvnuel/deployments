@@ -33,7 +33,7 @@ mysql-chart:
   replicaCount: 1
   image:
     repository: "myawesomeapps/sistema-estoque-mysql"
-    tag: "1.0"
+    tag: "1.1"
     pullPolicy: IfNotPresent
   persistence:
     enabled: true
