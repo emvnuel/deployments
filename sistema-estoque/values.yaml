@@ -1,0 +1,41 @@
+common-chart:
+  nameOverride: "sistema-estoque"
+  replicaCount: 1
+  image:
+    repository: "myawesomeapps/sistema-estoque"
+    tag: "1.0"
+    pullPolicy: IfNotPresent
+  service:
+    name: "sistema-estoque-svc"
+    port: 8080
+    targetPort: 8080
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  ingress:
+    enabled: false
+  probes:
+    enabled: false
+
+mysql-chart:
+  fullnameOverride: "sistema-estoque-mysql"
+  replicaCount: 1
+  image:
+    repository: "myawesomeapps/sistema-estoque-mysql"
+    tag: "1.0"
+    pullPolicy: IfNotPresent
+  persistence:
+    enabled: true
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

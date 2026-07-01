@@ -1,0 +1,13 @@
+apiVersion: v2
+name: sistema-estoque
+description: Sistema de Controle de Estoque Web (Tomcat + MySQL)
+type: application
+version: 1.0.0
+appVersion: "1.0"
+dependencies:
+  - name: common-chart
+    version: 0.1.0
+    repository: "file://../common-chart"
+  - name: mysql-chart
+    version: 0.1.0
+    repository: "file://charts/mysql-chart"

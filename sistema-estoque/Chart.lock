@@ -1,0 +1,9 @@
+dependencies:
+- name: common-chart
+  repository: file://../common-chart
+  version: 0.1.0
+- name: mysql-chart
+  repository: file://charts/mysql-chart
+  version: 0.1.0
+digest: sha256:4c51c3de26fa8acc4fe813e4ae8c3885b3104807c70d54b61a797cb2dc8d4a2c
+generated: "2026-07-01T13:24:04.089516-03:00"

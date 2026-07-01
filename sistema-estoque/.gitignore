@@ -1,0 +1,8 @@
+# Build artifacts — the Docker images are already published to DockerHub
+# (myawesomeapps/sistema-estoque:1.0, myawesomeapps/sistema-estoque-mysql:1.0)
+# These directories are only needed to rebuild the images locally.
+docker/*/SistemaEstoque/
+docker/*/init.sql
+
+# Helm vendored dependencies
+charts/*.tgz
