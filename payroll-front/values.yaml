@@ -15,7 +15,7 @@ common-chart:
       memory: 512Mi
   ingress:
     enabled: true
-    hostnames: "salario.ninja,www.salario.ninja"
+    hostnames: "salario.gambiarra.space,www.salario.gambiarra.space"
     cloudflare_proxied: true
     tls:
       enabled: true
