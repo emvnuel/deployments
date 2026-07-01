@@ -32,10 +32,24 @@ mysql-chart:
   persistence:
     enabled: true
     size: 1Gi
+  probes:
+    enabled: true
+    livenessProbe:
+      tcpSocket:
+        port: mysql
+      initialDelaySeconds: 120
+      periodSeconds: 30
+      failureThreshold: 6
+    readinessProbe:
+      tcpSocket:
+        port: mysql
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      failureThreshold: 10
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
-    limits:
-      cpu: 200m
+      cpu: 100m
       memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
