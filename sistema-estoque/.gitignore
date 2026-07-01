@@ -3,6 +3,3 @@
 # These directories are only needed to rebuild the images locally.
 docker/*/SistemaEstoque/
 docker/*/init.sql
-
-# Helm vendored dependencies
-charts/*.tgz
