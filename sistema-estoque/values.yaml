@@ -18,7 +18,13 @@ common-chart:
       cpu: 200m
       memory: 256Mi
   ingress:
-    enabled: false
+    enabled: true
+    hostnames: "sistema-estoque.gambiarra.space"
+    cloudflare_proxied: true
+    extraAnnotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    tls:
+      enabled: true
   probes:
     enabled: false
 
