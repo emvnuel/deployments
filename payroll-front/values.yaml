@@ -3,7 +3,7 @@ common-chart:
   replicaCount: 1
   image:
     repository: "myawesomeapps/payroll-front"
-    tag: "2.2"
+    tag: "2.3"
   service:
     name: "payroll-front-svc"
     port: 80
