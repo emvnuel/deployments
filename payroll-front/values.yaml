@@ -3,7 +3,7 @@ common-chart:
   replicaCount: 1
   image:
     repository: "myawesomeapps/payroll-front"
-    tag: "2.1"
+    tag: "2.2"
   service:
     name: "payroll-front-svc"
     port: 80
@@ -13,6 +13,14 @@ common-chart:
     limits:
       cpu: 100m
       memory: 512Mi
+  configMap:
+    enabled: true
+    name: "payroll-front-config"
+    data:
+      NEXT_PUBLIC_PAYROLL_API_URL: "https://payroll.gambiarra.space/payroll"
+  envFrom:
+    - configMapRef:
+        name: "payroll-front-config"
   ingress:
     enabled: true
     hostnames: "salario.gambiarra.space,www.salario.gambiarra.space"
