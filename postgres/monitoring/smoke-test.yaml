@@ -1,0 +1,65 @@
+# Postgres smoke test (Runbook 5)
+#
+# Two independent checks, both alerting via postgres-alerts PrometheusRule:
+# 1. CronJob: real pg_isready against postgres-cluster-rw (fails -> kube_job_status_failed -> PostgresSmokeTestFailed)
+# 2. Probe:   blackbox TCP connect to the rw service (-> PostgresRwUnreachable)
+# 3. Endpoints emptiness is covered by PostgresRwNoBackends (kube-state-metrics).
+#
+# Requires the blackbox exporter shipped with kube-prometheus-stack.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: postgres-cluster-rw
+  namespace: postgres
+  labels:
+    prometheus: kube-prometheus-stack
+spec:
+  prober:
+    scheme: http
+    url: http://kube-prometheus-stack-blackbox-exporter.monitoring.svc.cluster.local:9115
+  module: tcp_connect
+  targets:
+    staticConfig:
+      static:
+        - postgres-cluster-rw.postgres.svc.cluster.local:5432
+---
+# Smoke test that reproduces the "critical success signal" from the runbook:
+# the rw service must answer pg_isready within 8s. Failures surface as failed
+# Jobs (PostgresSmokeTestFailed alert) and in ArgoCD/kubectl get cronjob output.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-smoke-test
+  namespace: postgres
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: smoke-test
+              image: ghcr.io/cloudnative-pg/postgresql:16.2
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  TARGET=postgres-cluster-rw
+                  PORT=5432
+                  echo "[$(date -u +%FT%TZ)] running pg_isready smoke test against ${TARGET}:${PORT}"
+                  pg_isready -h ${TARGET} -p ${PORT} -U postgres -t 8
+                  echo "SUCCESS: ${TARGET}:${PORT} - accepting connections"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi

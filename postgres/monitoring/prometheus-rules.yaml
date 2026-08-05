@@ -115,6 +115,84 @@ spec:
             summary: "PostgreSQL backup is outdated"
             description: "Last successful backup was more than 24 hours ago."
         
+        # CNPG exposes the ContinuousArchiving condition on the Cluster CR but not as a
+        # metric. pg_stat_archiver is the earliest metric-level proxy: it only advances on
+        # the current primary, so track the max seconds-since-last-archival across pods.
+        - alert: CnpgWalArchivingFailing
+          expr: max by (pod) (cnpg_pg_stat_archiver_seconds_since_last_archival{namespace="postgres"}) > 300
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "ContinuousArchiving (WAL archiving) is failing"
+            description: "No WAL segment archived for {{ $value }}s on {{ $labels.pod }}. This is the earliest sign the CNPG ContinuousArchiving condition will flip to False. Check the barmanObjectStore destinationPath and backup-s3-credentials (Runbook 6.3)."
+
+        - alert: PostgresWalVolumeHigh
+          expr: sum by (pvc) (kubelet_volume_stats_used_bytes{pvc=~"postgres-cluster-[0-9]+-wal$", namespace="postgres"}) / sum by (pvc) (kubelet_volume_stats_capacity_bytes{pvc=~"postgres-cluster-[0-9]+-wal$", namespace="postgres"}) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL WAL volume usage high"
+            description: "WAL PVC {{ $labels.pvc }} is over 80% full. If archiving is failing (CnpgWalArchivingFailing) this PVC will overflow and freeze the cluster."
+
+        - alert: PostgresDiskSpaceLow
+          expr: sum by (pvc) (kubelet_volume_stats_used_bytes{pvc=~"postgres-cluster-[0-9]+$", namespace="postgres"}) / sum by (pvc) (kubelet_volume_stats_capacity_bytes{pvc=~"postgres-cluster-[0-9]+$", namespace="postgres"}) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL data volume usage high"
+            description: "Data PVC {{ $labels.pvc }} is over 80% full."
+
+        # Alert on node free-space directly, well before kubelet's ~85-90% DiskPressure
+        # taint threshold (the root trigger of the 2026 outage).
+        - alert: NodeDiskPressureSoon
+          expr: (1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs", mountpoint="/"} / node_filesystem_size_bytes{fstype=~"ext4|xfs", mountpoint="/"}) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node disk filling up"
+            description: "Node {{ $labels.instance }} root filesystem is over 80% used. kubelet will taint the node (DiskPressure) not far from here. Free space now (Runbook 3)."
+
+        - alert: NodeDiskPressureCritical
+          expr: (1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs", mountpoint="/"} / node_filesystem_size_bytes{fstype=~"ext4|xfs", mountpoint="/"}) > 0.9
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node disk critically full"
+            description: "Node {{ $labels.instance }} root filesystem is over 90% used. Expect a DiskPressure taint and evictions imminently."
+
+        # Runbook smoke test: rw service must have backend endpoints and accept connections.
+        - alert: PostgresRwNoBackends
+          expr: kube_endpoint_address_available{endpoint="postgres-cluster-rw", namespace="postgres"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "postgres-cluster-rw has no endpoints"
+            description: "No backend endpoints for postgres-cluster-rw. The cluster is likely frozen in Switchover/recovery - start with the fast triage (Runbook 1)."
+
+        - alert: PostgresRwUnreachable
+          expr: probe_success{instance="postgres-cluster-rw.postgres.svc.cluster.local:5432"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "postgres-cluster-rw not accepting connections"
+            description: "Blackbox probe (smoke-test.yaml) cannot connect to postgres-cluster-rw:5432 (Runbook 5)."
+
+        - alert: PostgresSmokeTestFailed
+          expr: increase(kube_job_status_failed{job_name=~"postgres-smoke-test.*", namespace="postgres"}[15m]) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL smoke test failed"
+            description: "The scheduled pg_isready smoke test (smoke-test.yaml) failed against postgres-cluster-rw (Runbook 5)."
+
         - alert: PostgreSQLTooManyDeadTuples
           expr: cnpg_pg_stat_user_tables_n_dead_tup > 10000
           for: 15m
