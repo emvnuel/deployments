@@ -7,3 +7,6 @@ postgres/**/*.secret.yaml
 
 # Copilot API secrets
 copilot-api/secrets.yaml
+
+# Artefatos locais do helm dependency (deps resolvidas via OCI/GHCR)
+**/charts/*.tgz

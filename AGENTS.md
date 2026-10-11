@@ -33,7 +33,8 @@
 
 - **NEVER deploy using helm install/upgrade** - Helm is for verification only
 - Verify a single app with the wrapper form: `helm template <release> <app>/`
-- Refresh vendored deps and verify every consumer: `scripts/verify-charts.sh`
+- Common chart is published to GHCR as an OCI artifact; consumers reference `oci://ghcr.io/emvnuel/charts` (bump the chart version on content changes)
+- Verify every consumer: `scripts/verify-charts.sh`
 - Install notes are subchart notes: view them with `helm install <name> <app>/ --dry-run=client --render-subchart-notes` (ArgoCD does not display notes)
 - Override values using `nameOverride` for app-specific naming
 - Use helper functions: `{{ include "common-chart.fullname" . }}`

@@ -1,9 +1,9 @@
 dependencies:
 - name: common-chart
-  repository: file://../common-chart
+  repository: oci://ghcr.io/emvnuel/charts
   version: 0.2.0
 - name: mysql-chart
   repository: file://charts/mysql-chart
   version: 0.1.1
-digest: sha256:59af1fec416fb252e5c696e4dbcd23949732fd32e08c320f6dc9d976a1ebc764
-generated: "2026-10-11T15:10:14.30769-03:00"
+digest: sha256:e33d720356116d00deae0fe8e38b9b03c8e1b583118f1180cbeee2681dcb3a44
+generated: "2026-10-11T20:21:29.54156-03:00"
