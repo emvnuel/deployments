@@ -15,6 +15,6 @@ common-chart:
   ingress:
     enabled: true
     hostnames: "video-extract.gambiarra.space"
-    cloudflare_proxied: true
+    cloudflareProxied: true
     tls:
       enabled: true

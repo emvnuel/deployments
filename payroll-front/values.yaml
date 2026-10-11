@@ -16,14 +16,27 @@ common-chart:
   configMap:
     enabled: true
     name: "payroll-front-config"
+    envFrom: true
     data:
       NEXT_PUBLIC_PAYROLL_API_URL: "https://payroll.gambiarra.space/payroll"
-  envFrom:
-    - configMapRef:
-        name: "payroll-front-config"
   ingress:
     enabled: true
     hostnames: "salario.gambiarra.space,www.salario.gambiarra.space"
-    cloudflare_proxied: true
+    cloudflareProxied: true
     tls:
       enabled: true
+  probes:
+    liveness:
+      enabled: true
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readiness:
+      enabled: true
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 10

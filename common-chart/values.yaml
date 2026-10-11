@@ -56,6 +56,8 @@ service:
 ingress:
   # -- Specifies whether an ingress should be created.
   enabled: false
+  # -- Ingress class name for the ingress.
+  className: "nginx"
   # -- Comma-separated list of hostnames for the ingress.
   hostnames: "chart-example.local"
   # -- The path for the ingress.
@@ -64,13 +66,12 @@ ingress:
   pathType: "Prefix"
   # -- Default annotations that will be applied to all services.
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     external-dns.alpha.kubernetes.io/ttl: "120"
   # -- Extra annotations for specific services. These will be merged with the default annotations.
   extraAnnotations: {}
-  # -- Whether to enable cloudflare proxying.
-  cloudflare_proxied: false
+  # -- Whether to enable Cloudflare proxying.
+  cloudflareProxied: false
   # -- TLS configuration for the ingress.
   tls:
     # -- Specifies whether TLS should be enabled.
@@ -91,25 +92,19 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-# -- Probes configuration.
+# -- Probes configuration. Each probe is enabled independently.
 probes:
-  # -- Enable or disable liveness and readiness probes.
-  enabled: true
-  # -- Liveness probe configuration.
-  livenessProbe:
-    httpGet:
-      path: /
-      port: http
-    initialDelaySeconds: 15
-    periodSeconds: 20
-
-  # -- Readiness probe configuration.
-  readinessProbe:
-    httpGet:
-      path: /
-      port: http
-    initialDelaySeconds: 5
-    periodSeconds: 10
+  # -- Liveness probe configuration. Any Kubernetes probe fields
+  # -- (httpGet / tcpSocket / exec / grpc, timings) belong directly under `liveness:`.
+  liveness:
+    # -- Specifies whether the liveness probe should be created.
+    enabled: false
+  # -- Readiness probe configuration. Any Kubernetes probe fields
+  # -- (httpGet / tcpSocket / exec / grpc, timings) belong directly under `readiness:`.
+  # -- When no probe fields are given, the chart defaults to a tcpSocket check on the `http` port.
+  readiness:
+    # -- Specifies whether the readiness probe should be created.
+    enabled: true
 
 # -- Environment variables for the container.
 env: []
@@ -139,5 +134,14 @@ configMap:
   enabled: false
   # -- The name of the configmap to use.
   name: ""
+  # -- Wire this ConfigMap into the container's envFrom. If enabled and configMap.enabled, the chart wires the ConfigMap it creates; if enabled with configMap.enabled=false and name set, wires that external ConfigMap by name.
+  envFrom: false
   # -- Data for the configmap.
   data: {}
+
+# -- Secret configuration. The chart references existing Secrets only; it never creates Secret payloads, keeping secret material out of values files and git.
+secret:
+  # -- The name of an existing Secret to wire into envFrom.
+  name: ""
+  # -- Wire this Secret into the container's envFrom. Requires secret.name.
+  envFrom: false

@@ -1,0 +1,45 @@
+# Default values for mysql-chart.
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: "myawesomeapps/sistema-estoque-mysql"
+  tag: "1.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 3306
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+
+probes:
+  enabled: true
+  livenessProbe:
+    tcpSocket:
+      port: mysql
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    failureThreshold: 6
+  readinessProbe:
+    tcpSocket:
+      port: mysql
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    failureThreshold: 10

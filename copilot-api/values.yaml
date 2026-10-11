@@ -21,18 +21,14 @@ common-chart:
       cpu: 100m
       memory: 256Mi
 
-  # -- Disable probes until health endpoint is configured
-  probes:
-    enabled: false
-
   # -- Load secrets from Kubernetes Secret
-  envFrom:
-    - secretRef:
-        name: copilot-api-secrets
+  secret:
+    envFrom: true
+    name: "copilot-api-secrets"
 
   ingress:
     enabled: true
     hostnames: "llm.gambiarra.space"
-    cloudflare_proxied: true
+    cloudflareProxied: true
     tls:
       enabled: true

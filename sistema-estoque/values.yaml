@@ -20,13 +20,11 @@ common-chart:
   ingress:
     enabled: true
     hostnames: "sistema-estoque.gambiarra.space"
-    cloudflare_proxied: true
+    cloudflareProxied: true
     extraAnnotations:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     tls:
       enabled: true
-  probes:
-    enabled: false
 
 mysql-chart:
   fullnameOverride: "sistema-estoque-mysql"

@@ -16,8 +16,6 @@ common-chart:
   ingress:
     enabled: true
     hostnames: "gambiarra.space,www.gambiarra.space,www1.gambiarra.space"
-    cloudflare_proxied: true
+    cloudflareProxied: true
     tls:
       enabled: true
-  probes:
-    enabled: false

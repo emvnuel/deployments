@@ -1,4 +1,15 @@
 {{- if .Values.ingress.enabled -}}
+{{- $rawHosts := splitList "," (required "ingress.hostnames is required when ingress.enabled is true" .Values.ingress.hostnames) -}}
+{{- $hostnames := list -}}
+{{- range $rawHosts -}}
+{{- $h := trim . -}}
+{{- if $h -}}
+{{- $hostnames = append $hostnames $h -}}
+{{- end -}}
+{{- end -}}
+{{- if not $hostnames -}}
+{{- fail "ingress.hostnames must contain at least one host" -}}
+{{- end -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,26 +17,27 @@ metadata:
   labels:
     {{- include "common-chart.labels" . | nindent 4 }}
   annotations:
-    {{- $annotations := merge .Values.ingress.extraAnnotations .Values.ingress.annotations -}}
-    {{- if .Values.ingress.hostnames -}}
-    {{-   $_ := set $annotations "external-dns.alpha.kubernetes.io/hostname" .Values.ingress.hostnames -}}
+    {{- $annotations := merge (deepCopy .Values.ingress.extraAnnotations) .Values.ingress.annotations -}}
+    {{- if $hostnames -}}
+    {{-   $_ := set $annotations "external-dns.alpha.kubernetes.io/hostname" (join "," $hostnames) -}}
     {{- end -}}
-    {{- if .Values.ingress.cloudflare_proxied -}}
+    {{- if .Values.ingress.cloudflareProxied -}}
     {{-   $_ := set $annotations "external-dns.alpha.kubernetes.io/cloudflare-proxied" "true" -}}
     {{- end -}}
     {{- toYaml $annotations | nindent 4 }}
 spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        {{- $hostnames := .Values.ingress.hostnames | splitList "," -}}
         {{- range $hostnames }}
         - {{ . | quote }}
         {{- end }}
       secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (include "common-chart.fullname" .)) }}
   {{- end }}
   rules:
-    {{- $hostnames := .Values.ingress.hostnames | splitList "," -}}
     {{- range $hostnames }}
     - host: {{ . | quote }}
       http:

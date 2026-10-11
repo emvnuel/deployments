@@ -37,7 +37,7 @@ Common labels
 helm.sh/chart: {{ include "common-chart.chart" . }}
 {{ include "common-chart.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
@@ -67,6 +67,17 @@ Create the name of the service to use
 {{- define "common-chart.serviceName" -}}
 {{- if .Values.service.name -}}
 {{- .Values.service.name -}}
+{{- else -}}
+{{- include "common-chart.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the ConfigMap to use
+*/}}
+{{- define "common-chart.configMapName" -}}
+{{- if .Values.configMap.name -}}
+{{- .Values.configMap.name -}}
 {{- else -}}
 {{- include "common-chart.fullname" . -}}
 {{- end -}}

@@ -27,20 +27,52 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
-          {{- if and .Values.probes.enabled .Values.probes.livenessProbe }}
-          livenessProbe:
-            {{- toYaml .Values.probes.livenessProbe | nindent 12 }}
+          {{- $liveness := omit .Values.probes.liveness "enabled" }}
+          {{- $livenessHandler := or $liveness.httpGet $liveness.tcpSocket $liveness.exec $liveness.grpc }}
+          {{- if and $livenessHandler (not .Values.probes.liveness.enabled) }}
+          {{- fail "probes.liveness has a handler but is not enabled; set probes.liveness.enabled=true or remove the handler" }}
           {{- end }}
-          {{- if and .Values.probes.enabled .Values.probes.readinessProbe }}
+          {{- if .Values.probes.liveness.enabled }}
+          {{- if not $livenessHandler }}
+          {{- fail "probes.liveness requires a probe handler (httpGet, tcpSocket, exec, or grpc)" }}
+          {{- end }}
+          livenessProbe:
+            {{- toYaml $liveness | nindent 12 }}
+          {{- end }}
+          {{- $readiness := omit .Values.probes.readiness "enabled" }}
+          {{- $readinessHandler := or $readiness.httpGet $readiness.tcpSocket $readiness.exec $readiness.grpc }}
+          {{- if and $readinessHandler (not .Values.probes.readiness.enabled) }}
+          {{- fail "probes.readiness has a handler but is not enabled; set probes.readiness.enabled=true or remove the handler" }}
+          {{- end }}
+          {{- if .Values.probes.readiness.enabled }}
+          {{- if not $readiness }}
+          {{- $readiness = dict "tcpSocket" (dict "port" "http") }}
+          {{- else if not $readinessHandler }}
+          {{- fail "probes.readiness requires a probe handler (httpGet, tcpSocket, exec, or grpc)" }}
+          {{- end }}
           readinessProbe:
-            {{- toYaml .Values.probes.readinessProbe | nindent 12 }}
+            {{- toYaml $readiness | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             {{- toYaml .Values.env | nindent 12 }}
           envFrom:
-            {{- toYaml .Values.envFrom | nindent 12 }}
+            {{- $envFrom := deepCopy (default (list) .Values.envFrom) -}}
+            {{- if .Values.configMap.envFrom }}
+            {{- if and (not .Values.configMap.enabled) (not .Values.configMap.name) }}
+            {{- fail "configMap.envFrom requires configMap.enabled=true or an explicit configMap.name for an externally managed ConfigMap" -}}
+            {{- end }}
+            {{- $configMapName := include "common-chart.configMapName" . -}}
+            {{- $envFrom = append $envFrom (dict "configMapRef" (dict "name" $configMapName)) -}}
+            {{- end }}
+            {{- if .Values.secret.envFrom }}
+            {{- if not .Values.secret.name }}
+            {{- fail "secret.envFrom requires secret.name; the chart references existing Secrets and does not create them" -}}
+            {{- end }}
+            {{- $envFrom = append $envFrom (dict "secretRef" (dict "name" .Values.secret.name)) -}}
+            {{- end }}
+            {{- toYaml $envFrom | nindent 12 }}
           volumeMounts:
             {{- toYaml .Values.volumeMounts | nindent 12 }}
       volumes:

@@ -32,10 +32,13 @@
 ## Common Chart Usage
 
 - **NEVER deploy using helm install/upgrade** - Helm is for verification only
-- Verify charts with: `helm template <release> common-chart/ -f <app>/values.yaml`
+- Verify a single app with the wrapper form: `helm template <release> <app>/`
+- Refresh vendored deps and verify every consumer: `scripts/verify-charts.sh`
+- Install notes are subchart notes: view them with `helm install <name> <app>/ --dry-run=client --render-subchart-notes` (ArgoCD does not display notes)
 - Override values using `nameOverride` for app-specific naming
 - Use helper functions: `{{ include "common-chart.fullname" . }}`
 - Standard patterns: deployment, service, ingress, configmap, serviceaccount
+- Secrets are referenced, never created: wire an existing Secret with `secret.name` + `secret.envFrom`; keep payloads out of tracked values
 - Apps inherit all common-chart features via values.yaml overrides
 
 ## Deployment via ArgoCD
