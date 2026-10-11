@@ -1,0 +1,79 @@
+# Postgres WAL guard (Runbook 9.4 - make WAL overflow survivable)
+#
+# Safety net while object-store archiving is disabled (no S3). PostgreSQL
+# already recycles WAL automatically at checkpoints (bounded by max_wal_size);
+# this job only nudges it when the pile gets close to the PVC/alert threshold.
+#
+# Every 6h: if pg_wal > WAL_LIMIT_MB, run CHECKPOINT (the trigger that lets the
+# server drop already-archived segments) and log sizes before/after.
+# It never deletes WAL files directly.
+#
+# Related alerts: PostgresWalVolumeHigh (>80% of the 2Gi walStorage PVC) and
+# CnpgWalArchivingFailing in monitoring/prometheus-rules.yaml.
+#
+# Auth: dedicated `walguard` role (LOGIN, member of pg_monitor + pg_checkpoint)
+# stored in secret postgres-wal-guard-credentials (keys username/password).
+# If the cluster is ever bootstrapped from scratch, recreate the role:
+#   psql -U postgres -c "CREATE ROLE walguard LOGIN IN ROLE pg_monitor, pg_checkpoint;"
+#   psql -U postgres -c "ALTER ROLE walguard WITH PASSWORD '<from secret>';"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-wal-guard
+  namespace: postgres
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: wal-guard
+              image: ghcr.io/cloudnative-pg/postgresql:16.2
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  LIMIT_BYTES=$((WAL_LIMIT_MB * 1024 * 1024))
+                  PSQL="psql -h postgres-cluster-rw -p 5432 -d postgres -U ${PGUSER} -tA --no-psqlrc -v ON_ERROR_STOP=1"
+                  SIZE=$($PSQL -c "SELECT coalesce(sum(size),0) FROM pg_ls_waldir();")
+                  echo "[$(date -u +%FT%TZ)] pg_wal = ${SIZE} bytes (limite = ${LIMIT_BYTES} bytes / ${WAL_LIMIT_MB} MiB)"
+                  if [ "$SIZE" -gt "$LIMIT_BYTES" ]; then
+                    echo "acima do limite -> executando CHECKPOINT para forcar a reciclagem"
+                    $PSQL -c "CHECKPOINT;"
+                    AFTER=$($PSQL -c "SELECT coalesce(sum(size),0) FROM pg_ls_waldir();")
+                    echo "pg_wal pos-checkpoint = ${AFTER} bytes"
+                  else
+                    echo "OK, abaixo do limite - nenhuma acao necessaria"
+                  fi
+              env:
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-wal-guard-credentials
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-wal-guard-credentials
+                      key: password
+                - name: PGDATABASE
+                  value: postgres
+                - name: WAL_LIMIT_MB
+                  value: "1536"
+                - name: PGCONNECT_TIMEOUT
+                  value: "10"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
