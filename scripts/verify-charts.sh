@@ -13,7 +13,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-CONSUMERS=(payroll payroll-front landing-page personal-landing-page copilot-api sistema-estoque archived/explana-app/api archived/explana-app/front archived/video-extract/api archived/video-extract/front)
+CONSUMERS=(payroll payroll-front landing-page personal-landing-page copilot-api sistema-estoque hermes-agent archived/explana-app/api archived/explana-app/front archived/video-extract/api archived/video-extract/front)
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
