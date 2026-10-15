@@ -1,0 +1,12 @@
+Hermes Agent gateway is starting:
+  dashboard: https://hermes.gambiarra.space (login via dashboard basic auth)
+
+Before the first sync, the `hermes-agent-secrets` Secret must exist
+(the chart only references it — placeholders fail closed):
+  kubectl create ns hermes-agent
+  kubectl create secret generic hermes-agent-secrets -n hermes-agent \
+    --from-literal=... (full command in secrets.yaml header)
+
+After changing `hermes.*` values, bump
+`common-chart.podAnnotations["hermes-agent/config-rev"]` or the pod keeps
+serving the old subPath-mounted config.yaml.

@@ -1,0 +1,175 @@
+# Hermes Agent deployment using common-chart.
+#
+# Architecture (official image: nousresearch/hermes-agent):
+#   - container runs `gateway run` (Telegram polling, cron, sessions)
+#   - HERMES_DASHBOARD=1 starts the web dashboard (port 9119) as a supervised
+#     side-process in the SAME container — no second port/service needed.
+#   - /opt/data is HERMES_HOME (sessions, memory, state.db, skills) on a PVC.
+#   - config.yaml is GitOps-owned: mounted read-only from a ConfigMap
+#     (see templates/hermes-config.yaml). Dashboard Config edits won't persist
+#     by design — change values here instead.
+#   - secrets (bot token, API keys, dashboard password) live in the
+#     gitignored secrets.yaml -> Secret `hermes-agent-secrets`, wired via
+#     secret.envFrom. Never commit secret payloads.
+#
+# Docs: https://hermes-agent.nousresearch.com/docs/user-guide/docker
+#       https://hermes-agent.nousresearch.com/docs/user-guide/messaging/telegram
+
+common-chart:
+  nameOverride: "hermes-agent"
+  # -- MUST stay 1: single Telegram poller, single state.db writer, RWO volume.
+  replicaCount: 1
+  # -- Recreate (never RollingUpdate): the old pod must stop polling BEFORE the
+  # -- new one starts, or two gateways fight over one bot token and drop updates.
+  strategy:
+    type: Recreate
+  # -- Bump `hermes-agent/config-rev` every time you change `hermes.*` below:
+  # -- restarts the pod so the subPath-mounted config.yaml is re-resolved
+  # -- (kubelet never updates subPath mounts in place).
+  podAnnotations:
+    hermes-agent/config-rev: "1"
+
+  image:
+    repository: "nousresearch/hermes-agent"
+    tag: "v0.22.1"
+    pullPolicy: IfNotPresent
+
+  # -- Keep ENTRYPOINT (s6 dispatcher); pass `gateway run` as CMD args.
+  # Overriding `command` would bypass supervision (incl. the dashboard),
+  # so only `args` is set here.
+  args:
+    - "gateway"
+    - "run"
+
+  service:
+    name: "hermes-agent-svc"
+    port: 9119
+    targetPort: 9119
+    type: ClusterIP
+
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  # -- Security contexts intentionally unset: the image must start as root
+  # -- (s6 chowns /opt/data, then drops to `hermes`). runAsNonRoot breaks boot.
+  # -- Compensating control: Telegram allowlist + restricted dashboard access.
+
+  probes:
+    # -- No liveness probe on purpose: agent turns can run longer than any
+    # -- sane failure threshold; killing the pod mid-turn loses work.
+    # -- Readiness gates ingress traffic until gateway+dashboard are up.
+    liveness:
+      enabled: false
+    readiness:
+      enabled: true
+      httpGet:
+        path: /api/status
+        port: 9119
+      initialDelaySeconds: 90
+      periodSeconds: 15
+      failureThreshold: 5
+
+  # -- Non-secret operator settings (process env beats /opt/data/.env).
+  env:
+    - name: HERMES_HOME
+      value: "/opt/data"
+    - name: HERMES_DASHBOARD
+      value: "1"
+    - name: HERMES_TIMEZONE
+      value: "America/Sao_Paulo"
+
+  # -- Non-secret env bulk-set (wired via envFrom, same as payroll pattern).
+  configMap:
+    enabled: true
+    name: "hermes-agent-env"
+    envFrom: true
+    data:
+      # -- Reply in groups only on @mention/reply/command (privacy-safe default).
+      TELEGRAM_REQUIRE_MENTION: "true"
+
+  # -- Existing Secret only; payload lives in gitignored secrets.yaml.
+  secret:
+    envFrom: true
+    name: "hermes-agent-secrets"
+
+  volumeMounts:
+    - name: data
+      mountPath: /opt/data
+    - name: config-file
+      mountPath: /opt/data/config.yaml
+      subPath: config.yaml
+      readOnly: true
+
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        # -- Static name (not the fullname helper): common-chart volumes take
+        # -- literal values. Must match persistence.claimName below.
+        claimName: hermes-agent-data
+    - name: config-file
+      configMap:
+        name: hermes-agent-file
+
+  ingress:
+    enabled: true
+    hostnames: "hermes.gambiarra.space"
+    cloudflareProxied: true
+    # -- Basic auth is VPN/trusted-network only. Restrict who can reach the
+    # -- dashboard: either nginx source-range allowlisting (uncomment + set
+    # -- your home/VPN CIDR — accurate only if the real client IP reaches
+    # -- ingress-nginx, e.g. use-forwarded-headers / enable-real-ip)…
+    # extraAnnotations:
+    #   nginx.ingress.kubernetes.io/whitelist-source-range: "YOUR_CIDR_HERE"
+    # -- …or, preferably, Cloudflare Zero Trust Access in front of the hostname.
+    # -- For public-internet exposure use the Nous OAuth provider instead.
+    tls:
+      enabled: true
+
+# -- PVC backing /opt/data (HERMES_HOME). Created by templates/pvc.yaml.
+persistence:
+  enabled: true
+  claimName: "hermes-agent-data"
+  storageClass: "local-path"
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+# -- Rendered into the `hermes-agent-file` ConfigMap as config.yaml.
+# -- Model catalog is live per provider; verify names with:
+# --   curl https://opencode.ai/zen/go/v1/models
+hermes:
+  # -- LLM provider (Hermes built-in `opencode-go`: $10/mo open-models relay).
+  modelProvider: "opencode-go"
+  # -- Default model on the opencode-go relay (verified via `opencode models`).
+  # -- WARNING: for this family opencode-go lists ONLY the `-contributor` id,
+  # -- and Meta may train on prompts/completions. There is no non-contributor
+  # -- `muse-spark-1.3` on this provider (that id lives on the separate
+  # -- `meta-ai` provider + MODEL_API_KEY). Keep this default only if training
+  # -- on Telegram content is acceptable; verified alternatives on opencode-go
+  # -- are e.g. "kimi-k2.7-code" or "minimax-m2.7". Exercise one tool-using
+  # -- turn after switching models — tool-calling is not verified for every id.
+  model: "muse-spark-1.3-contributor"
+  # -- Where agent shell commands execute. `local` = inside this container.
+  # -- No isolation — treat allowlists/pairing as the security boundary.
+  terminalBackend: "local"
+  # -- Thinking depth before answering ("" = Hermes default, medium).
+  # -- Options: none, minimal, low, medium, high, xhigh, max, ultra.
+  # -- `ultra` is clamped to the strongest level the route accepts. The relay
+  # -- may reject the field for some models; Hermes retries without it, so
+  # -- check gateway.log if the level seems to have no effect.
+  reasoningEffort: "xhigh"
+  # -- Exact external URL used to reach the dashboard (scheme + host). Set it
+  # -- behind the ingress: it is accepted verbatim as HTTP Host / WebSocket
+  # -- Origin (PTY Chat works, DNS-rebinding guard satisfied) and enables
+  # -- proxy-header processing. Changing it requires a config-rev bump.
+  publicUrl: "https://hermes.gambiarra.space"
+  # -- Exact IPs/CIDRs allowed to supply X-Forwarded-* (usually your ingress
+  # -- controller / pod CIDR — never 0.0.0.0/0). Without an entry: clients
+  # -- share one login rate-limit bucket, audit IPs are wrong, and HTTPS
+  # -- session cookies may lack the Secure flag (X-Forwarded-Proto ignored).
+  trustedProxies: []

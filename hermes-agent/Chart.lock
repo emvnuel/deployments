@@ -1,0 +1,6 @@
+dependencies:
+- name: common-chart
+  repository: oci://ghcr.io/emvnuel/charts
+  version: 0.3.0
+digest: sha256:f8b55794a13bfbd032c56e01046ed8fda50afe9f4bbde4127885e663188c2710
+generated: "2026-10-15T19:49:55.795064-03:00"

@@ -1,0 +1,31 @@
+# GitOps-owned Hermes config. Mounted read-only at $HERMES_HOME/config.yaml
+# (subPath, so the rest of /opt/data stays writable on the PVC).
+# Secrets stay in the `hermes-agent-secrets` Secret (process env), never here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hermes-agent-file
+data:
+  config.yaml: |
+    model:
+      provider: {{ .Values.hermes.modelProvider | quote }}
+      default: {{ .Values.hermes.model | quote }}
+    terminal:
+      backend: {{ .Values.hermes.terminalBackend | quote }}
+      timeout: 180
+    display:
+      tool_progress: all
+    {{- with .Values.hermes.reasoningEffort }}
+    agent:
+      reasoning_effort: {{ . | quote }}
+    {{- end }}
+    {{- if or .Values.hermes.publicUrl .Values.hermes.trustedProxies }}
+    dashboard:
+      {{- with .Values.hermes.publicUrl }}
+      public_url: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.hermes.trustedProxies }}
+      trusted_proxies:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}

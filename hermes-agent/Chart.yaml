@@ -1,0 +1,10 @@
+apiVersion: v2
+name: hermes-agent
+description: Hermes Agent gateway (Nous Research) — Telegram chat, OpenCode-Go LLM, dashboard
+type: application
+version: 0.1.0
+appVersion: "v0.22.1"
+dependencies:
+  - name: common-chart
+    version: 0.3.0
+    repository: "oci://ghcr.io/emvnuel/charts"
