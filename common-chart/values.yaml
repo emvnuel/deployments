@@ -18,6 +18,23 @@ image:
   # -- The pull policy for the container image.
   pullPolicy: IfNotPresent
 
+# -- Override the image ENTRYPOINT (container `command`). Empty = use the image default.
+command: []
+# -- Override the image CMD (container `args`). Empty = use the image default.
+# -- NOTE: setting only `args` keeps the image ENTRYPOINT (e.g. an s6
+# -- dispatcher) and passes `args` as its CMD.
+args: []
+
+# -- Pod replacement strategy, passed straight to Deployment.spec.strategy.
+# -- Empty = Kubernetes default (RollingUpdate). Use `{type: Recreate}` for
+# -- single-writer workloads (one poller, one SQLite writer, RWO volume).
+strategy: {}
+# -- Extra annotations for the pod template (NOT the Deployment object).
+# -- Any change here rolls the pods — use for config-revision bumps when the
+# -- app config comes from a subPath-mounted ConfigMap (kubelet never updates
+# -- subPath mounts in place, and ConfigMap edits alone don't restart pods).
+podAnnotations: {}
+
 # -- Service account configuration.
 serviceAccount:
   # -- Specifies whether a service account should be created.

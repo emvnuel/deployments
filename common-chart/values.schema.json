@@ -27,6 +27,10 @@
         "annotations": { "type": "object", "additionalProperties": true }
       }
     },
+    "command": { "type": "array" },
+    "args": { "type": "array" },
+    "strategy": { "type": "object", "additionalProperties": true },
+    "podAnnotations": { "type": "object", "additionalProperties": true },
     "podSecurityContext": { "type": "object", "additionalProperties": true },
     "securityContext": { "type": "object", "additionalProperties": true },
     "resources": { "type": "object", "additionalProperties": true },
