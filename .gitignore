@@ -8,5 +8,8 @@ postgres/**/*.secret.yaml
 # Copilot API secrets
 copilot-api/secrets.yaml
 
+# Hermes Agent secrets - never commit to git
+hermes-agent/secrets.yaml
+
 # Artefatos locais do helm dependency (deps resolvidas via OCI/GHCR)
 **/charts/*.tgz
