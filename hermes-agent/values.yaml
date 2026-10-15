@@ -28,7 +28,6 @@ common-chart:
   # -- (kubelet never updates subPath mounts in place).
   podAnnotations:
     hermes-agent/config-rev: "1"
-
   image:
     repository: "nousresearch/hermes-agent"
     tag: "v0.22.1"
@@ -124,9 +123,11 @@ common-chart:
     # -- your home/VPN CIDR — accurate only if the real client IP reaches
     # -- ingress-nginx, e.g. use-forwarded-headers / enable-real-ip)…
     # extraAnnotations:
-    #   nginx.ingress.kubernetes.io/whitelist-source-range: "YOUR_CIDR_HERE"
+    #   nginx.ingress.kubernetes.io/whitelist-source-range: "201.32.245.90/32"
     # -- …or, preferably, Cloudflare Zero Trust Access in front of the hostname.
     # -- For public-internet exposure use the Nous OAuth provider instead.
+    # -- CAVEAT with cloudflareProxied: the whitelist sees Cloudflare edge IPs,
+    # -- not yours, so whitelisting only bites if cloudflareProxied is false.
     tls:
       enabled: true
 
@@ -168,8 +169,10 @@ hermes:
   # -- Origin (PTY Chat works, DNS-rebinding guard satisfied) and enables
   # -- proxy-header processing. Changing it requires a config-rev bump.
   publicUrl: "https://hermes.gambiarra.space"
-  # -- Exact IPs/CIDRs allowed to supply X-Forwarded-* (usually your ingress
-  # -- controller / pod CIDR — never 0.0.0.0/0). Without an entry: clients
-  # -- share one login rate-limit bucket, audit IPs are wrong, and HTTPS
-  # -- session cookies may lack the Secure flag (X-Forwarded-Proto ignored).
-  trustedProxies: []
+  # -- Exact IPs/CIDRs allowed to supply X-Forwarded-* — the k3s pod CIDR, so
+  # -- ingress-nginx (a pod) is trusted. Bounded but cluster-wide: any pod in
+  # -- this range could forge client IPs, acceptable on this single-tenant
+  # -- cluster. Needed for per-client login limits, audit IPs, and the
+  # -- Secure cookie flag (X-Forwarded-Proto) behind the TLS terminator.
+  trustedProxies:
+    - "10.42.0.0/16"
