@@ -29,3 +29,21 @@ data:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     {{- end }}
+    {{- with .Values.hermes.mcpServers }}
+    mcp_servers:
+      {{- range $name, $server := . }}
+      {{ $name }}:
+        command: {{ $server.command | quote }}
+        {{- with $server.args }}
+        args:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $server.env }}
+        env:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $server.connectTimeout }}
+        connect_timeout: {{ . }}
+        {{- end }}
+      {{- end }}
+    {{- end }}

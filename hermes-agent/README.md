@@ -98,6 +98,33 @@ After any `hermes.*` change, bump
 `common-chart.podAnnotations["hermes-agent/config-rev"]` (`"1"` → `"2"` …)
 in the same commit so the pod restarts onto the new file.
 
+## MCP servers (n8n)
+
+The gateway spawns stdio MCP servers as child processes; their tools reach
+the model with the `mcp_` prefix. One is wired: `n8n-mcp` (`npx -y n8n-mcp`)
+against the in-cluster Service `http://n8n-app.n8n.svc.cluster.local:80`.
+Defined under `hermes.mcpServers` in `values.yaml`, rendered into
+`mcp_servers:` in `config.yaml`.
+
+- The n8n API key stays out of git: `config.yaml` carries `${N8N_API_KEY}`,
+  which Hermes resolves from process env at config load — the
+  `hermes-agent-secrets` Secret (`envFrom`), same pattern as the
+  Telegram/OpenCode credentials. An unset var stays literal, so n8n API
+  calls then fail with 401s: check the Secret first.
+- `connectTimeout: 90` (Hermes default 30s) absorbs the cold `npx` download
+  on first spawn; npm caches into `/opt/data/.npm` on the PVC (the image
+  ships its own node/npx).
+- Verify from the pod:
+  `kubectl -n hermes-agent exec deploy/hermes-agent -- hermes mcp list` and
+  `... -- hermes mcp test n8n-mcp`.
+- Rotate the key in n8n (Settings → n8n API) → update the Secret
+  (`kubectl -n hermes-agent patch secret hermes-agent-secrets --type merge
+  -p '{"stringData":{"N8N_API_KEY":"..."}}'`) → restart the pod
+  (`kubectl -n hermes-agent rollout restart deploy/hermes-agent`): env is
+  read at container start, and `envFrom` changes alone don't restart pods.
+- Adding another server: extend `hermes.mcpServers`, commit, and bump
+  `config-rev` as usual.
+
 ## Conventions
 
 - Full Hermes behavior config lives in `values.yaml` (`hermes.*` rendered

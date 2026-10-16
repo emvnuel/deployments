@@ -27,7 +27,7 @@ common-chart:
   # -- restarts the pod so the subPath-mounted config.yaml is re-resolved
   # -- (kubelet never updates subPath mounts in place).
   podAnnotations:
-    hermes-agent/config-rev: "1"
+    hermes-agent/config-rev: "2"
   image:
     repository: "nousresearch/hermes-agent"
     tag: "v0.22.1"
@@ -176,3 +176,24 @@ hermes:
   # -- Secure cookie flag (X-Forwarded-Proto) behind the TLS terminator.
   trustedProxies:
     - "10.42.0.0/16"
+  # -- Stdio MCP servers rendered into config.yaml as `mcp_servers`. Hermes
+  # -- spawns each `command` as a child of the gateway; its tools are exposed
+  # -- with the `mcp_` prefix. SECURITY: this file is committed to git, so
+  # -- secret values MUST be ${VAR} refs resolved from process env at config
+  # -- load (wired from the `hermes-agent-secrets` Secret) — never literals.
+  mcpServers:
+    n8n-mcp:
+      command: "npx"
+      args: ["-y", "n8n-mcp"]
+      env:
+        MCP_MODE: "stdio"
+        LOG_LEVEL: "error"
+        DISABLE_CONSOLE_OUTPUT: "true"
+        # -- In-cluster Service (ns `n8n`, port 80): skips the Cloudflare hop.
+        N8N_API_URL: "http://n8n-app.n8n.svc.cluster.local:80"
+        # -- n8n public API key; resolved from the Secret env, not committed.
+        N8N_API_KEY: "${N8N_API_KEY}"
+      # -- Hermes default is 30s. First spawn of each pod can pay a cold
+      # -- `npx -y` npm download; the cache warms into /opt/data/.npm (PVC),
+      # -- so 90s is only load-bearing on a fresh volume.
+      connectTimeout: 90
