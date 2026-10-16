@@ -27,7 +27,7 @@ common-chart:
   # -- restarts the pod so the subPath-mounted config.yaml is re-resolved
   # -- (kubelet never updates subPath mounts in place).
   podAnnotations:
-    hermes-agent/config-rev: "2"
+    hermes-agent/config-rev: "3"
   image:
     repository: "nousresearch/hermes-agent"
     tag: "v0.22.1"
@@ -177,8 +177,8 @@ hermes:
   trustedProxies:
     - "10.42.0.0/16"
   # -- Stdio MCP servers rendered into config.yaml as `mcp_servers`. Hermes
-  # -- spawns each `command` as a child of the gateway; its tools are exposed
-  # -- with the `mcp_` prefix. SECURITY: this file is committed to git, so
+  # -- spawns each `command` as a child of the gateway; tools reach the model
+  # -- as `mcp__<server>__<tool>`. SECURITY: this file is committed to git, so
   # -- secret values MUST be ${VAR} refs resolved from process env at config
   # -- load (wired from the `hermes-agent-secrets` Secret) — never literals.
   mcpServers:
@@ -189,6 +189,9 @@ hermes:
         MCP_MODE: "stdio"
         LOG_LEVEL: "error"
         DISABLE_CONSOLE_OUTPUT: "true"
+        # -- n8n-mcp ships opt-out telemetry (install id under /opt/data);
+        # -- env toggle beats the file, so a fresh PVC stays opted out.
+        N8N_MCP_TELEMETRY_DISABLED: "true"
         # -- In-cluster Service (ns `n8n`, port 80): skips the Cloudflare hop.
         N8N_API_URL: "http://n8n-app.n8n.svc.cluster.local:80"
         # -- n8n public API key; resolved from the Secret env, not committed.

@@ -100,8 +100,9 @@ in the same commit so the pod restarts onto the new file.
 
 ## MCP servers (n8n)
 
-The gateway spawns stdio MCP servers as child processes; their tools reach
-the model with the `mcp_` prefix. One is wired: `n8n-mcp` (`npx -y n8n-mcp`)
+The gateway spawns stdio MCP servers as child processes; tools reach the
+model as `mcp__<server>__<tool>` (e.g. `mcp__n8n_mcp__n8n_create_workflow`).
+One is wired: `n8n-mcp` (`npx -y n8n-mcp`)
 against the in-cluster Service `http://n8n-app.n8n.svc.cluster.local:80`.
 Defined under `hermes.mcpServers` in `values.yaml`, rendered into
 `mcp_servers:` in `config.yaml`.
@@ -114,6 +115,8 @@ Defined under `hermes.mcpServers` in `values.yaml`, rendered into
 - `connectTimeout: 90` (Hermes default 30s) absorbs the cold `npx` download
   on first spawn; npm caches into `/opt/data/.npm` on the PVC (the image
   ships its own node/npx).
+- n8n-mcp telemetry is opted out via `N8N_MCP_TELEMETRY_DISABLED=true`
+  (env beats its on-disk config, so a fresh PVC stays opted out).
 - Verify from the pod:
   `kubectl -n hermes-agent exec deploy/hermes-agent -- hermes mcp list` and
   `... -- hermes mcp test n8n-mcp`.
