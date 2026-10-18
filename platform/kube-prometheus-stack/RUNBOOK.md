@@ -91,7 +91,7 @@ expose Prometheus metrics. They are scraped via the wrapper's own
 |---|---|---|
 | cert-manager (controller/cainjector/webhook) | Services `:9402` | port names differ per Service |
 | ArgoCD (controller/server/repo/notifications/applicationset) | Services `:8082/:8083/:8084/:9001/:8080` | |
-| ingress-nginx | Pod `:10254` | no chart Service exposes 10254 → dedicated metrics Service + ServiceMonitor (`templates/ingress-nginx-metrics-service.yaml`) |
+| ingress-nginx | Pod `:10254` | dedicated metrics Service + ServiceMonitor (`templates/ingress-nginx-metrics-service.yaml`), since no chart Service exposes 10254. ⚠️ needs `--enable-metrics=true` in the controller args (v1.12 default is `false`) — without it only Go/process metrics are exposed |
 
 To scrape a new component: verify the endpoint from inside the Prometheus pod
 first (`kubectl exec -n monitoring prometheus-kube-prometheus-stack-prometheus-0 -c prometheus -- wget -S -qO- <url>`),
