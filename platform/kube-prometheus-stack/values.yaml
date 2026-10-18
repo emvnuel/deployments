@@ -79,7 +79,7 @@ kube-prometheus-stack:
         enabled: true
         searchNamespace: ALL
     admin:
-      existingSecret: kube-prometheus-stack-grafana
+      existingSecret: grafana-admin
   alertmanager:
     enabled: true
     alertmanagerSpec:
