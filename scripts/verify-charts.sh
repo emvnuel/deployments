@@ -5,7 +5,7 @@ set -euo pipefail
 # Uso: ./scripts/verify-charts.sh (a partir da raiz do repo)
 #
 # O common-chart é publicado como artefato OCI pelo workflow
-# .github/workflows/publish-common-chart.yml (ver common-chart/README.md).
+# .github/workflows/publish-common-chart.yml (ver charts/common-chart/README.md).
 # Cada consumer pina a versão no Chart.lock; este script resolve as
 # dependências (helm dependency build) e renderiza (helm template) dentro de
 # uma cópia temporária, então a árvore de trabalho permanece limpa.
@@ -13,13 +13,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-CONSUMERS=(payroll payroll-front landing-page personal-landing-page copilot-api sistema-estoque hermes-agent archived/explana-app/api archived/explana-app/front archived/video-extract/api archived/video-extract/front)
+CONSUMERS=(apps/payroll apps/payroll-front apps/landing-page apps/personal-landing-page apps/copilot-api apps/sistema-estoque apps/hermes-agent archived/explana-app/api archived/explana-app/front archived/video-extract/api archived/video-extract/front)
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-echo "== helm lint common-chart/ =="
-helm lint common-chart/
+echo "== helm lint charts/common-chart/ =="
+helm lint charts/common-chart/
 
 failures=()
 for dir in "${CONSUMERS[@]}"; do

@@ -1,12 +1,12 @@
 name: publish-common-chart
 
 # Publica o common-chart como artefato OCI no GHCR.
-# Consumidores referenciam: "oci://ghcr.io/<owner>/charts" (ver common-chart/README.md).
+# Consumidores referenciam: "oci://ghcr.io/<owner>/charts" (ver charts/common-chart/README.md).
 on:
   push:
     branches: [master]
     paths:
-      - "common-chart/**"
+      - "charts/common-chart/**"
       - ".github/workflows/publish-common-chart.yml"
   workflow_dispatch: {}
 
@@ -26,9 +26,9 @@ jobs:
         id: decide
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            if git diff --quiet "${{ github.event.before }}" "${{ github.sha }}" -- common-chart; then
+            if git diff --quiet "${{ github.event.before }}" "${{ github.sha }}" -- charts/common-chart; then
               echo "publish=false" >> "$GITHUB_OUTPUT"
-              echo "common-chart não mudou neste push; nada a publicar."
+              echo "charts/common-chart não mudou neste push; nada a publicar."
               exit 0
             fi
           fi
@@ -41,7 +41,7 @@ jobs:
 
       - name: Lint
         if: steps.decide.outputs.publish == 'true'
-        run: helm lint common-chart/
+        run: helm lint charts/common-chart/
 
       - name: Login no GHCR
         if: steps.decide.outputs.publish == 'true'
@@ -51,12 +51,12 @@ jobs:
         if: steps.decide.outputs.publish == 'true'
         run: |
           set -euo pipefail
-          VERSION="$(helm show chart common-chart | awk '/^version:/{print $2}')"
+          VERSION="$(helm show chart charts/common-chart | awk '/^version:/{print $2}')"
           echo "versão: $VERSION"
           mkdir -p /tmp/chart
-          helm package common-chart -d /tmp/chart
+          helm package charts/common-chart -d /tmp/chart
           if helm show chart "oci://ghcr.io/${{ github.repository_owner }}/charts/common-chart" --version "$VERSION" >/dev/null 2>&1; then
-            echo "::error::common-chart $VERSION já está publicado no GHCR. Suba a versão em common-chart/Chart.yaml e commite novamente."
+            echo "::error::common-chart $VERSION já está publicado no GHCR. Suba a versão em charts/common-chart/Chart.yaml e commite novamente."
             exit 1
           fi
           helm push "/tmp/chart/common-chart-$VERSION.tgz" "oci://ghcr.io/${{ github.repository_owner }}/charts"

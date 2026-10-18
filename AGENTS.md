@@ -24,7 +24,7 @@
 
 ## File Structure
 
-- Common chart in `common-chart/` for reusable templates
+- Common chart in `charts/common-chart/` for reusable templates
 - App-specific values in `<app-name>/values.yaml`
 - MongoDB deployments use StatefulSets with PVCs
 - Ingress uses nginx controller with cert-manager
