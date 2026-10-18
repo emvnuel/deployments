@@ -102,6 +102,10 @@ gives the exact port name.
 
 ## 6) Known gaps / follow-ups
 
+> Deferred work and decisions are tracked in
+> `docs/adr/0002-pendencias-monitoracao.md` (ADR 0002) — keep it updated when
+> closing one of the items below.
+
 - **App metrics:** no app exposes `/metrics` today (aside from Postgres/CNPG).
   `common-chart` supports an optional `serviceMonitor` block (v0.3.2) for when
   the apps start exposing one. n8n has it enabled (`N8N_METRICS=true`).
