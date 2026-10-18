@@ -45,6 +45,9 @@ n8n:
     extraEnv:
       GENERIC_TIMEZONE:
         value: "America/Sao_Paulo"
+      # -- Expõe /metrics em :5678 (scrape pelo ServiceMonitor templates/servicemonitor.yaml).
+      N8N_METRICS:
+        value: "true"
       N8N_ENCRYPTION_KEY:
         valueFrom:
           secretKeyRef:

@@ -1,0 +1,19 @@
+# ServiceMonitor for n8n Prometheus metrics.
+# Requires N8N_METRICS=true (see values.yaml); the endpoint /metrics is served
+# by n8n itself on the Service `http` port (container port 5678).
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: n8n
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: n8n
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
