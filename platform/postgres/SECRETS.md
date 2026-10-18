@@ -20,7 +20,7 @@ openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32
 
 ### 1. Database User Secrets
 
-**File:** `postgres/cluster/secrets.yaml` (local only, not in git)
+**File:** `platform/postgres/cluster/secrets.yaml` (local only, not in git)
 
 ```yaml
 apiVersion: v1
@@ -46,7 +46,7 @@ stringData:
 
 ### 2. Backup S3 Credentials
 
-**File:** `postgres/backup/backup-secrets.yaml` (local only, not in git)
+**File:** `platform/postgres/backup/backup-secrets.yaml` (local only, not in git)
 
 ```yaml
 apiVersion: v1
@@ -79,7 +79,7 @@ Create the secret files locally (they won't be committed to git):
 
 ```bash
 # Create secrets.yaml
-cat > postgres/cluster/secrets.yaml << 'EOF'
+cat > platform/postgres/cluster/secrets.yaml << 'EOF'
 apiVersion: v1
 kind: Secret
 metadata:
@@ -102,7 +102,7 @@ stringData:
 EOF
 
 # Create backup-secrets.yaml
-cat > postgres/backup/backup-secrets.yaml << 'EOF'
+cat > platform/postgres/backup/backup-secrets.yaml << 'EOF'
 apiVersion: v1
 kind: Secret
 metadata:
@@ -122,8 +122,8 @@ EOF
 kubectl create namespace postgres --dry-run=client -o yaml | kubectl apply -f -
 
 # Apply secrets
-kubectl apply -f postgres/cluster/secrets.yaml
-kubectl apply -f postgres/backup/backup-secrets.yaml
+kubectl apply -f platform/postgres/cluster/secrets.yaml
+kubectl apply -f platform/postgres/backup/backup-secrets.yaml
 ```
 
 ### Step 4: Verify Secrets
@@ -145,10 +145,12 @@ Once secrets are applied manually, deploy via ArgoCD:
 
 ```bash
 # Apply ArgoCD project and application
-kubectl apply -f postgres/argocd/project.yaml
-kubectl apply -f postgres/argocd/application.yaml
+# A partir da raiz do repo (app-of-apps):
+kubectl apply -f argocd/bootstrap/postgres-project.yaml   # 1x
+kubectl apply -f argocd/apps/postgres-cluster.yaml        # gerenciado pelo app root
 
-# ArgoCD will sync everything EXCEPT secrets (excluded via .argocdignore)
+# Segredos não estão no git; o app não tem prune automático. Os Secrets do
+# namespace postgres carregam argocd.argoproj.io/sync-options: Prune=false.
 ```
 
 ## Updating Secrets
@@ -157,10 +159,10 @@ kubectl apply -f postgres/argocd/application.yaml
 
 ```bash
 # Edit the local file
-vi postgres/cluster/secrets.yaml
+vi platform/postgres/cluster/secrets.yaml
 
 # Apply changes
-kubectl apply -f postgres/cluster/secrets.yaml
+kubectl apply -f platform/postgres/cluster/secrets.yaml
 
 # For app_user password changes to take effect, restart pooler
 kubectl rollout restart deployment postgres-pooler -n postgres
@@ -172,10 +174,10 @@ kubectl rollout restart deployment postgres-pooler -n postgres
 
 ```bash
 # Edit the local file
-vi postgres/backup/backup-secrets.yaml
+vi platform/postgres/backup/backup-secrets.yaml
 
 # Apply changes
-kubectl apply -f postgres/backup/backup-secrets.yaml
+kubectl apply -f platform/postgres/backup/backup-secrets.yaml
 
 # Restart cluster to pick up new credentials (if backups fail)
 kubectl delete pod -n postgres -l postgresql=postgres-cluster
@@ -200,10 +202,10 @@ For production, consider using external secrets management:
 kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.24.0/controller.yaml
 
 # Seal secrets
-kubeseal < postgres/cluster/secrets.yaml > postgres/cluster/secrets-sealed.yaml
+kubeseal < platform/postgres/cluster/secrets.yaml > platform/postgres/cluster/secrets-sealed.yaml
 
 # Commit sealed secrets (safe to store in git)
-git add postgres/cluster/secrets-sealed.yaml
+git add platform/postgres/cluster/secrets-sealed.yaml
 git commit -m "Add sealed secrets"
 git push
 ```
@@ -275,7 +277,7 @@ helm install vault hashicorp/vault --namespace vault --create-namespace
 kubectl get secret postgres-app-user -n postgres
 
 # If not, apply it
-kubectl apply -f postgres/cluster/secrets.yaml
+kubectl apply -f platform/postgres/cluster/secrets.yaml
 ```
 
 ### Connection Authentication Failed
@@ -300,7 +302,7 @@ kubectl label secret postgres-app-user -n postgres argocd.argoproj.io/instance=p
 ## Security Checklist
 
 - [ ] Secrets files added to `.gitignore`
-- [ ] Secrets patterns added to `.argocdignore`
+- [ ] Secrets referenciados nunca são prunados (`argocd.argoproj.io/sync-options: Prune=false`)
 - [ ] Strong passwords generated (32+ chars)
 - [ ] Secrets applied to cluster manually
 - [ ] Secret access limited via RBAC
@@ -316,7 +318,7 @@ If secrets were accidentally committed:
 ```bash
 # Remove from entire git history
 git filter-branch --force --index-filter \
-  "git rm --cached --ignore-unmatch postgres/cluster/secrets.yaml postgres/backup/backup-secrets.yaml" \
+  "git rm --cached --ignore-unmatch platform/postgres/cluster/secrets.yaml platform/postgres/backup/backup-secrets.yaml" \
   --prune-empty --tag-name-filter cat -- --all
 
 # Force push (WARNING: rewrites history)

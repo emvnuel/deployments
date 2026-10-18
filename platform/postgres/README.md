@@ -23,8 +23,8 @@ This directory contains a production-ready PostgreSQL setup using the CloudNativ
 ## Directory Structure
 
 ```
-postgres/
-├── operator/           # CloudNativePG operator installation
+platform/postgres/
+├── operator/           # CloudNativePG operator (namespace + ServiceAccount)
 ├── cluster/            # PostgreSQL cluster configuration
 ├── backup/             # Backup configuration and credentials
 ├── monitoring/         # Prometheus rules and Grafana dashboards
@@ -72,10 +72,11 @@ kubectl apply -f backup/backup-secrets.yaml
 
 ```bash
 # Apply ArgoCD project and application
-kubectl apply -f argocd/project.yaml
-kubectl apply -f argocd/application.yaml
+# A partir da raiz do repo (app-of-apps):
+kubectl apply -f argocd/bootstrap/postgres-project.yaml
+kubectl apply -f argocd/apps/postgres-cluster.yaml
 
-# ArgoCD will automatically sync from git (excluding secrets)
+# O app não tem sync automático (igual ao comportamento anterior)
 ```
 
 **Step 4: Verify Deployment**
