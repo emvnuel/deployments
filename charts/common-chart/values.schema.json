@@ -107,6 +107,18 @@
         "name": { "type": "string" },
         "envFrom": { "type": "boolean" }
       }
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "labels": { "type": "object", "additionalProperties": true },
+        "port": { "type": "string" },
+        "path": { "type": "string" },
+        "interval": { "type": "string" },
+        "scrapeTimeout": { "type": "string" }
+      }
     }
   }
 }

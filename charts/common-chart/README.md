@@ -31,3 +31,21 @@ dependencies:
   `helm dependency build`.
 - The GHCR package must stay **public** so ArgoCD can pull it anonymously
   (if it ever needs to be private, configure repository credentials in ArgoCD).
+
+## Optional ServiceMonitor
+
+Apps that expose a Prometheus `/metrics` endpoint can render a ServiceMonitor
+by overriding `serviceMonitor`:
+
+```yaml
+common-chart:
+  serviceMonitor:
+    enabled: true
+    # port: http      # Service port name (fixed by the chart)
+    # path: /metrics
+    # interval: 30s
+```
+
+The cluster's Prometheus Operator selects ServiceMonitors cluster-wide
+(`serviceMonitorNamespaceSelector: {}`), so no extra labels are required.
+

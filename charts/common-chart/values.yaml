@@ -162,3 +162,20 @@ secret:
   name: ""
   # -- Wire this Secret into the container's envFrom. Requires secret.name.
   envFrom: false
+
+# -- Optional ServiceMonitor for Prometheus scraping. Requires the Prometheus
+# -- Operator CRDs (monitoring.coreos.com) in the cluster; leave disabled when
+# -- the app does not expose a Prometheus /metrics endpoint.
+serviceMonitor:
+  # -- Specifies whether a ServiceMonitor should be created.
+  enabled: false
+  # -- Extra labels for the ServiceMonitor object (ex.: release).
+  labels: {}
+  # -- Service port name to scrape. The chart's Service always names it `http`.
+  port: http
+  # -- HTTP path exposing Prometheus metrics.
+  path: /metrics
+  # -- Scrape interval.
+  interval: 30s
+  # -- Scrape timeout. Empty = Prometheus default.
+  scrapeTimeout: ""
