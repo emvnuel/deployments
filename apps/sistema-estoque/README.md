@@ -5,7 +5,7 @@ Java EE (JSP/Servlet) stock control system running on Tomcat 8.5 with MySQL 8.0.
 ## Components
 
 - **App** (`myawesomeapps/sistema-estoque:1.0`) — Tomcat 8.5 + JSP/Servlet webapp, exposed on port 8080
-- **MySQL** (`myawesomeapps/sistema-estoque-mysql:1.0`) — MySQL 8.0 with `sistema_estoque` schema and tables pre-loaded via `/docker-entrypoint-initdb.d/init.sql`
+- **MySQL** (`myawesomeapps/sistema-estoque-mysql:1.1`) — MySQL 8.0 with `sistema_estoque` schema and tables pre-loaded via `/docker-entrypoint-initdb.d/init.sql`
 
 Both images are multi-arch (`linux/amd64` + `linux/arm64`).
 
@@ -24,9 +24,10 @@ The app resolves MySQL via the in-cluster DNS name `sistema-estoque-mysql:3306` 
 ## Deploy
 
 ```bash
-helm dependency update
-helm template sistema-estoque .             # validate rendering
-kubectl apply -f argocd-application.yaml    # let ArgoCD sync
+helm dependency build          # common-chart (OCI) + mysql-chart (local)
+helm template sistema-estoque . # validate rendering
 ```
 
-See `argocd-application.yaml` for the ArgoCD Application manifest.
+O deploy é GitOps: a Application vive em `argocd/apps/sistema-estoque.yaml`
+(gerenciada pelo app raiz `argocd/bootstrap/root.yaml`). Não crie manifest
+temporário com `kubectl apply`; commite a mudança e deixe o ArgoCD sincronizar.
