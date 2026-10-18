@@ -1,0 +1,28 @@
+{{/*
+ServiceMonitors extras (extraServiceMonitors em values.yaml), para componentes
+que vivem fora deste chart. Renderizados individualmente de propósito — o
+`prometheus.additionalServiceMonitors` do upstream emite `kind: List`, que o
+ArgoCD não expande bem no diff/apply.
+*/}}
+{{- range .Values.extraServiceMonitors }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: kube-prometheus-stack
+spec:
+  endpoints:
+    {{- toYaml .endpoints | nindent 4 }}
+  selector:
+    {{- toYaml .selector | nindent 4 }}
+  {{- with .jobLabel }}
+  jobLabel: {{ . }}
+  {{- end }}
+  {{- with .namespaceSelector }}
+  namespaceSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

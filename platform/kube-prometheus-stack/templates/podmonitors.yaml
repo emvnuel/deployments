@@ -1,0 +1,26 @@
+{{/*
+PodMonitors extras (extraPodMonitors em values.yaml) para alvos sem Service
+adequado (ex.: ingress-nginx, cujo Service não expõe a porta 10254).
+*/}}
+{{- range .Values.extraPodMonitors }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: kube-prometheus-stack
+spec:
+  podMetricsEndpoints:
+    {{- toYaml .podMetricsEndpoints | nindent 4 }}
+  selector:
+    {{- toYaml .selector | nindent 4 }}
+  {{- with .jobLabel }}
+  jobLabel: {{ . }}
+  {{- end }}
+  {{- with .namespaceSelector }}
+  namespaceSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
