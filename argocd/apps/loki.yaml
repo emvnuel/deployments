@@ -5,6 +5,12 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
   name: loki
   namespace: argocd
+  # -- StatefulSets gerenciados diretamente pelo ArgoCD + ServerSideApply
+  # -- produzem "phantom diffs" (defaults do k8s e status do volumeClaimTemplate).
+  # -- O server-side diff delega a comparação ao API server e elimina o falso
+  # -- OutOfSync (argo-cd#11143 / #11106).
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   destination:
     namespace: logging
