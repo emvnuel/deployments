@@ -10,12 +10,11 @@ metadata:
 data:
   postgres-overview.json: |
     {
-      "dashboard": {
-        "title": "PostgreSQL - CloudNativePG Overview",
+      "title": "PostgreSQL - CloudNativePG Overview",
         "panels": [
           {
             "title": "Database Size",
-            "type": "graph",
+            "type": "timeseries",
             "datasource": "Prometheus",
             "targets": [
               {
@@ -25,7 +24,7 @@ data:
           },
           {
             "title": "Active Connections",
-            "type": "graph",
+            "type": "timeseries",
             "datasource": "Prometheus",
             "targets": [
               {
@@ -35,7 +34,7 @@ data:
           },
           {
             "title": "Transaction Rate",
-            "type": "graph",
+            "type": "timeseries",
             "datasource": "Prometheus",
             "targets": [
               {
@@ -45,7 +44,7 @@ data:
           },
           {
             "title": "Replication Lag",
-            "type": "graph",
+            "type": "timeseries",
             "datasource": "Prometheus",
             "targets": [
               {
@@ -54,7 +53,6 @@ data:
             ]
           }
         ]
-      }
     }
 ---
 # PrometheusRule for PostgreSQL alerts
