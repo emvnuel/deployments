@@ -111,9 +111,14 @@ alloy:
         }
 
         // ---- Journald (k3s/kubelet/containerd/systemd) ---------------------
-        // `path` vazio: o Alloy descobre /var/log/journal e /run/log/journal.
+        // `path` explícito: com path vazio o componente tenta descobrir
+        // /var/log/journal E /run/log/journal; como só o primeiro existe nos
+        // nós (journal persistente), a descoberta falha silenciosamente e o
+        // componente fica com 0 linhas (testado na v1.20.1).
 
         loki.source.journal "systemd" {
+          path = "/var/log/journal"
+
           labels = {
             node = sys.env("NODE_NAME"),
           }
