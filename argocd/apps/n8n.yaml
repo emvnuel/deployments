@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: n8n
+    path: apps/n8n
     repoURL: https://github.com/emvnuel/deployments.git
     targetRevision: HEAD
   syncPolicy:

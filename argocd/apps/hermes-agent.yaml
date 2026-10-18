@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: hermes-agent
+    path: apps/hermes-agent
     repoURL: https://github.com/emvnuel/deployments.git
     targetRevision: HEAD
   syncPolicy:

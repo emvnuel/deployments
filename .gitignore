@@ -1,15 +1,9 @@
 .DS_Store
-# PostgreSQL secrets - never commit to git
-postgres/cluster/secrets.yaml
-postgres/backup/backup-secrets.yaml
-postgres/**/*-secrets.yaml
-postgres/**/*.secret.yaml
 
-# Copilot API secrets
-copilot-api/secrets.yaml
-
-# Hermes Agent secrets - never commit to git
-hermes-agent/secrets.yaml
+# Segredos — nunca commitar (globs valem para qualquer app/diretório)
+secrets.yaml
+*-secrets.yaml
+*.secret.yaml
 
 # Artefatos locais do helm dependency (deps resolvidas via OCI/GHCR)
 **/charts/*.tgz
