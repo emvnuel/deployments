@@ -154,7 +154,8 @@ loki:
         cpu: 10m
         memory: 64Mi
       limits:
-        cpu: 100m
+        # -- 100m causava CPUThrottlingHigh (info) nos picos do sidecar.
+        cpu: 250m
         memory: 256Mi
 
   monitoring:

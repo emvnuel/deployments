@@ -92,15 +92,22 @@ alloy:
         loki.process "pipeline" {
           forward_to = [loki.write.loki.receiver]
 
+          // Remove o cabeçalho CRI do kubelet (timestamp, stream, flag) ANTES
+          // de qualquer parsing — sem isso as linhas chegam como
+          // "2026-... stdout F mensagem" e o multiline do Tomcat não casa.
+          stage.cri {}
+
           stage.static_labels {
             values = {
               cluster = "homelab",
             }
           }
 
-          // Tomcat/JULI (sistema-estoque): junta stack traces numa única entrada.
+          // Tomcat/JULI (sistema-estoque): junta stack traces numa única
+          // entrada. Escopo no container do Tomcat — o MySQL do mesmo
+          // namespace usa prefixo ISO e não deve ser agrupado.
           stage.match {
-            selector = "{namespace=\"sistema-estoque\"}"
+            selector = "{container=\"sistema-estoque\"}"
 
             stage.multiline {
               firstline     = "^\\d{2}-[A-Za-z]{3}-\\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}"
@@ -208,7 +215,8 @@ alloy:
         cpu: 10m
         memory: 32Mi
       limits:
-        cpu: 50m
+        # -- 50m causava CPUThrottlingHigh (info) no container do reloader.
+        cpu: 250m
         memory: 64Mi
 
   # -- Métricas internas do Alloy (loki_source_file_*, loki_write_*) no
