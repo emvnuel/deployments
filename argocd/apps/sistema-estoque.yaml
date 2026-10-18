@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: sistema-estoque
+    path: apps/sistema-estoque
     repoURL: git@github.com:emvnuel/deployments.git
     targetRevision: HEAD
   syncPolicy:
