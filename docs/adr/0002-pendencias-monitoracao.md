@@ -27,27 +27,33 @@ Total de alvos ativos: 40/40 `up` (2026-10-18T22:50 UTC).
 
 ## 2. P1 — Métricas de aplicação (nenhuma app expõe `/metrics` hoje)
 
-### 2.1 payroll (Spring Boot, `myawesomeapps/payroll:3.0`)
+### 2.1 payroll (Go/Gin, `myawesomeapps/payroll:3.0`)
 
-- **Evidência:** `/actuator`, `/actuator/prometheus` e `/q/metrics` → HTTP 404 a partir do pod do Prometheus.
+- **Evidência:** `/actuator`, `/actuator/prometheus` e `/q/metrics` → HTTP 404; os logs mostram
+  `[GIN] ... 404` — a app é **Go (Gin)**, não Spring Boot (corrigido em 2026-10-18, durante a
+  implementação da stack de logs).
 - **Implementação:**
-  1. na imagem: adicionar `spring-boot-starter-actuator` + `io.micrometer:micrometer-registry-prometheus`;
-     expor somente `health,prometheus` (`management.endpoints.web.exposure.include=health,prometheus`);
+  1. na imagem: expor `/metrics` com `promhttp.Handler()` (`prometheus/client_golang`);
+     opcionalmente o middleware `go-gin-prometheus` para métricas por rota;
   2. no chart: subir a dependência `common-chart` para `>=0.3.2` (`apps/payroll/Chart.yaml`) e habilitar
      `common-chart.serviceMonitor.enabled: true`.
-- **Aceite:** `up{job=~".*payroll.*"} == 1` e séries `jvm_memory_used_bytes`/`http_server_requests` presentes.
+- **Aceite:** `up{job=~".*payroll.*"} == 1` e séries `go_*`/`http_*` presentes.
 
-### 2.2 sistema-estoque (Spring Boot `:1.0` + MySQL `:1.1`)
+### 2.2 sistema-estoque (Java/Tomcat `:1.0` + MySQL `:1.1`)
 
-- **Evidência:** idem 2.1 (`/actuator` 404). MySQL só tem métricas de container (cAdvisor).
+- **Evidência:** `/actuator` 404 e os logs são do **Tomcat clássico** (`org.apache.catalina...`,
+  formato JULI `dd-Mon-yyyy HH:mm:ss.SSS`) — é uma WAR sobre Tomcat, não Spring Boot (corrigido em
+  2026-10-18). MySQL só tem métricas de container (cAdvisor).
 - **Implementação:**
-  1. app: mesmo tratamento do payroll (actuator + micrometer) e `serviceMonitor` do common-chart;
+  1. app (Java/Tomcat): anexar o `jmx_exporter` da Prometheus como javaagent (`JAVA_OPTS`,
+     expondo `:9404` com um config de Tomcat/JVM) e criar `port: metrics` no Service +
+     `serviceMonitor` do common-chart; alternativa mais invasiva: micrometer na WAR;
   2. MySQL: adicionar `mysqld-exporter` — opções:
      - (a) **sidecar** no pod do `mysql-chart` (`apps/sistema-estoque/charts/mysql-chart`) com
        `MYSQLD_EXPORTER_PASSWORD` vindo de Secret existente (mais barato, porém acopla ao pod do banco);
      - (b) Deployment separado + ServiceMonitor (mais isolado, mais recursos).
      Recomendação: (a) com usuário `exporter` de menor privilégio (evitar o root do banco).
-- **Aceite:** `mysql_up == 1` + target `mysql` up.
+- **Aceite:** `mysql_up == 1` + target `mysql` up; séries `jvm_*`/`tomcat_*` via jmx_exporter.
 
 ### 2.3 hermes-agent
 

@@ -4,7 +4,7 @@
 
 - `charts/<chart>/` — reusable charts published to OCI (`oci://ghcr.io/emvnuel/charts`); never an Application `path`
 - `apps/<app>/` — 1 app = 1 chart = 1 Application (`argocd/apps/<app>.yaml`)
-- `platform/<comp>/` — shared infra: `postgres/` (raw directory app), `kube-prometheus-stack/` + `headlamp/` (upstream wrappers)
+- `platform/<comp>/` — shared infra: `postgres/` (raw directory app), `kube-prometheus-stack/` + `headlamp/` + `loki/` + `alloy/` (upstream wrappers)
 - `argocd/bootstrap/` — AppProjects + root app-of-apps (`root.yaml`), applied by hand once
 - `argocd/apps/` — one Application per app, reconciled by `root`
 - `archived/` — frozen; excluded from `verify-charts.sh` unless `--archived`
