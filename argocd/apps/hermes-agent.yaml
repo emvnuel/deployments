@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hermes-agent
+  namespace: argocd
+spec:
+  destination:
+    namespace: hermes-agent
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: hermes-agent
+    repoURL: https://github.com/emvnuel/deployments.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

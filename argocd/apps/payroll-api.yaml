@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: payroll-api
+  namespace: argocd
+spec:
+  destination:
+    namespace: payroll
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: payroll
+    repoURL: https://github.com/emvnuel/deployments.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

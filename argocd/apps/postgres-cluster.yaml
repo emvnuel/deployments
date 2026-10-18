@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  name: postgres-cluster
+  namespace: argocd
+spec:
+  destination:
+    namespace: postgres
+    server: https://kubernetes.default.svc
+  ignoreDifferences:
+  - group: apps
+    jsonPointers:
+    - /spec/volumeClaimTemplates
+    kind: StatefulSet
+  - jsonPointers:
+    - /data
+    kind: Secret
+  project: postgres
+  source:
+    directory:
+      jsonnet: {}
+      recurse: true
+    path: postgres
+    repoURL: https://github.com/emvnuel/deployments.git
+    targetRevision: master
+  syncPolicy:
+    retry:
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+      limit: 5
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true

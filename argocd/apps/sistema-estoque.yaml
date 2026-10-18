@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sistema-estoque
+  namespace: argocd
+spec:
+  destination:
+    namespace: sistema-estoque
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: sistema-estoque
+    repoURL: git@github.com:emvnuel/deployments.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: personal-landing-page
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: personal-landing-page
+    repoURL: https://github.com/emvnuel/deployments.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
