@@ -141,18 +141,21 @@ loki:
   # -- Sidecar de regras: copia ConfigMaps com label `loki_rule=1` deste
   # -- namespace para /rules (lido pelo ruler). O folder inclui a subpasta do
   # -- tenant "fake" (auth desabilitada) exigida pelo rulestore local.
+  # -- Só configmaps (secrets não são usados) e limits folgados: com 64Mi o
+  # -- sidecar (Python) entrou em OOMKill e parou de copiar as regras.
   sidecar:
     rules:
       enabled: true
       labelValue: "1"
       folder: /rules/fake
+      resource: configmap
     resources:
       requests:
         cpu: 10m
-        memory: 32Mi
-      limits:
-        cpu: 50m
         memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
 
   monitoring:
     # -- Dashboards oficiais do Loki; o sidecar do Grafana (searchNamespace

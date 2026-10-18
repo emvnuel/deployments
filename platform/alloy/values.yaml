@@ -111,10 +111,10 @@ alloy:
         }
 
         // ---- Journald (k3s/kubelet/containerd/systemd) ---------------------
-        // `path` explícito: com path vazio o componente tenta descobrir
-        // /var/log/journal E /run/log/journal; como só o primeiro existe nos
-        // nós (journal persistente), a descoberta falha silenciosamente e o
-        // componente fica com 0 linhas (testado na v1.20.1).
+        // Lê o journal do nó com `path` explícito. Requer o initContainer
+        // `fix-machine-id` (ver controller.initContainers): a imagem do Alloy
+        // tem /etc/machine-id vazio, e sem machine-id o sd_journal não
+        // encontra o journal do host (lia 0 linhas em todos os nós).
 
         loki.source.journal "systemd" {
           path = "/var/log/journal"
@@ -149,6 +149,12 @@ alloy:
       extra:
         - name: alloy-data
           mountPath: /var/lib/alloy
+        # -- Machine-id do nó (ver initContainer fix-machine-id): o sd_journal
+        # -- usa /etc/machine-id para localizar o journal; na imagem do Alloy
+        # -- esse arquivo é vazio.
+        - name: machine-id
+          mountPath: /etc/machine-id
+          subPath: machine-id
 
     resources:
       requests:
@@ -165,6 +171,36 @@ alloy:
           hostPath:
             path: /var/lib/alloy
             type: DirectoryOrCreate
+        - name: machine-id
+          emptyDir: {}
+    # -- O /etc/machine-id da imagem do Alloy é vazio; sem machine-id o
+    # -- componente loki.source.journal lê 0 linhas (sd_journal_open usa o
+    # -- machine-id local para achar o journal). Este initContainer descobre o
+    # -- ID do nó (nome do diretório do journal ativo) e grava no emptyDir,
+    # -- que é montado por cima de /etc/machine-id no container principal.
+    # -- Sem journal ativo encontrado, grava vazio (não quebra o mount).
+    initContainers:
+      - name: fix-machine-id
+        image: docker.io/grafana/alloy:v1.20.1
+        command:
+          - sh
+          - -c
+          - |
+            id=""
+            for d in /var/log/journal/*/; do
+              if [ -f "$d/system.journal" ]; then
+                id="${d%/}"; id="${id##*/}"
+                break
+              fi
+            done
+            printf "%s" "$id" > /machine-id/machine-id
+            echo "machine-id do nó: [$id]"
+        volumeMounts:
+          - name: varlog
+            mountPath: /var/log
+            readOnly: true
+          - name: machine-id
+            mountPath: /machine-id
 
   configReloader:
     resources:
