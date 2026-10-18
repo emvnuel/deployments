@@ -1,0 +1,10 @@
+apiVersion: v2
+name: headlamp
+description: Wrapper do chart upstream headlamp (Kubernetes UI)
+type: application
+version: 0.1.0
+appVersion: "0.39.0"
+dependencies:
+  - name: headlamp
+    version: 0.39.0
+    repository: https://kubernetes-sigs.github.io/headlamp/

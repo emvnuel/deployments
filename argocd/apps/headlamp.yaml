@@ -10,16 +10,6 @@ spec:
     namespace: headlamp
     server: https://kubernetes.default.svc
   project: default
-  sources:
-  - chart: headlamp
-    helm:
-      valueFiles:
-      - $values/headlamp/values.yaml
-    repoURL: https://kubernetes-sigs.github.io/headlamp/
-    targetRevision: 0.39.0
-  - ref: values
-    repoURL: https://github.com/emvnuel/deployments.git
-    targetRevision: master
   syncPolicy:
     automated:
       prune: true
@@ -33,3 +23,7 @@ spec:
     syncOptions:
     - CreateNamespace=true
     - ServerSideApply=true
+  source:
+    repoURL: https://github.com/emvnuel/deployments.git
+    targetRevision: HEAD
+    path: platform/headlamp

@@ -1,0 +1,36 @@
+name: verify-charts
+
+# Roda a verificação de charts em PRs e em pushes no master.
+# scripts/verify-charts.sh deriva a lista de charts via find, roda
+# helm dependency build + lint + template em cópia temporária e valida o
+# YAML cru de platform/postgres.
+
+on:
+  pull_request:
+    paths:
+      - "apps/**"
+      - "charts/**"
+      - "platform/**"
+      - "scripts/**"
+      - ".github/workflows/verify-charts.yml"
+  push:
+    branches: [master]
+    paths:
+      - "apps/**"
+      - "charts/**"
+      - "platform/**"
+      - "scripts/**"
+      - ".github/workflows/verify-charts.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.17.1
+
+      - name: Verificar charts
+        run: ./scripts/verify-charts.sh

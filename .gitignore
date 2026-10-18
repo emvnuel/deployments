@@ -7,3 +7,6 @@ secrets.yaml
 
 # Artefatos locais do helm dependency (deps resolvidas via OCI/GHCR)
 **/charts/*.tgz
+
+# Ferramentas locais (opencode)
+.opencode/

@@ -1,6 +1,6 @@
 # ADR 0001 — Reorganização de diretórios do repo `deployments`
 
-Status: proposto
+Status: implementado em 2026-10-18 (ver notas de implementação no fim)
 Data: 2026-10-18
 Contexto: repo ArgoCD + Helm (`emvnuel/deployments`), `common-chart` OCI `ghcr.io/emvnuel/charts`
 Análise prévia: opencode `deepseek-v4.1-flash#max` em clone fresco (branch base `master@6edad4c`)
@@ -162,9 +162,40 @@ cat docs/adr/0001-reorganizacao-diretorios.md
 ```
 
 Checklist de continuação:
-- [ ] Fase 0: backup + tabela app→path→project→prune→drift
-- [ ] Fase 1: `argocd/apps/*.yaml` + `argocd/bootstrap/root.yaml` + sync root verde
-- [ ] Fase 2: moves em lotes com diff vazio
-- [ ] Fase 3: `charts/common-chart` + publish 0.3.1
-- [ ] Fase 4: sistema-estoque + postgres
-- [ ] Fase 5: wrappers platform + CI verify + docs
+- [x] Fase 0: backup + tabela app→path→project→prune→drift
+- [x] Fase 1: `argocd/apps/*.yaml` + `argocd/bootstrap/root.yaml` + sync root verde
+- [x] Fase 2: moves em lotes com diff vazio
+- [x] Fase 3: `charts/common-chart` + publish 0.3.1
+- [x] Fase 4: sistema-estoque + postgres
+- [x] Fase 5: wrappers platform + CI verify + docs
+
+## 8. Notas de implementação (2026-10-18, agente com cluster)
+
+Executado em `master`, em lotes, com `helm template` comparado antes/depois e
+sem recriar nenhum pod (idades dos pods inalteradas):
+
+- **Fase 0:** backup em `/tmp/apps-backup-2026-10-18.yaml` + `projects-backup.yaml`; drift
+  pré-existente confirmado só em `postgres-cluster` (OutOfSync/Healthy, sem automação).
+- **Fase 1:** `root` Synced; 11 Applications versionadas em `argocd/apps/`; AppProject `postgres`
+  em `argocd/bootstrap/postgres-project.yaml`; root sem finalizer (deleção não cascateia).
+- **Fase 2:** `apps/` recebeu payroll, payroll-front, landing-page, personal-landing-page,
+  copilot-api, n8n, hermes-agent e sistema-estoque. O `.gitignore` por app vazou secrets
+  locais no `git add` → corrigido no mesmo push para globs (`secrets.yaml`, `*-secrets.yaml`,
+  `*.secret.yaml`); o GitHub Push Protection bloqueou o push antes de qualquer vazamento.
+- **Fase 3:** `charts/common-chart` 0.3.1 publicado (workflow `publish-charts.yml`, matriz
+  `charts/*`). Digests 0.2.0/0.3.0 dos consumers não mudaram.
+- **Fase 4:** `platform/postgres` movido; `.argocdignore` removido (era inerte);
+  `directory.exclude` **não** foi adicionado porque `operator/install.yaml` contém apenas
+  Namespace + ServiceAccount (excluí-lo mudaria o estado gerenciado). Secrets manuais
+  ganharam `argocd.argoproj.io/sync-options: Prune=false`. `mysql-chart` **não** foi promovido
+  a OCI (evita pacote GHCR novo); permanece em `apps/sistema-estoque/charts/mysql-chart`
+  e o `.tgz` vendorizado foi removido (ArgoCD roda `helm dependency build`).
+  `docker/` foi preservado: os Dockerfiles estão versionados e o contexto de build
+  (`SistemaEstoque/`, `init.sql`) é local-only — remover apagaria a única referência de build.
+- **Fase 5:** wrappers `platform/kube-prometheus-stack` e `platform/headlamp` (values aninhados);
+  render normalizado idêntico exceto o Secret do Grafana, que saiu do git (`grafana.admin.existingSecret`
+  aponta para o Secret existente, anotado com `Prune=false,Delete=false`).
+  `scripts/verify-charts.sh` derivado via `find` (+ validação YAML de `platform/postgres`);
+  `verify-charts.yml` em PR e push; `publish-charts.yml` com descoberta dinâmica.
+- **Débitos:** `postgres-cluster` continua OutOfSync/Healthy (pré-existente; sync manual exige
+  revisar o drift); Renovate para bumps do common-chart segue opcional (seção 5).

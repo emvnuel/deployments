@@ -5,8 +5,8 @@ Shared Helm chart consumed by the app charts in this repository.
 ## Publishing (OCI)
 
 This chart is published as an OCI artifact to GHCR by
-`.github/workflows/publish-common-chart.yml`, which runs on every push to
-`master` that touches `common-chart/**`:
+`.github/workflows/publish-charts.yml`, which runs on every push to
+`master` that touches `charts/common-chart/**`:
 
 ```
 oci://ghcr.io/emvnuel/charts/common-chart --version <version>

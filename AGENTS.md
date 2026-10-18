@@ -1,11 +1,22 @@
 # AGENTS.md - Development Guidelines
 
+## Repository map
+
+- `charts/<chart>/` — reusable charts published to OCI (`oci://ghcr.io/emvnuel/charts`); never an Application `path`
+- `apps/<app>/` — 1 app = 1 chart = 1 Application (`argocd/apps/<app>.yaml`)
+- `platform/<comp>/` — shared infra: `postgres/` (raw directory app), `kube-prometheus-stack/` + `headlamp/` (upstream wrappers)
+- `argocd/bootstrap/` — AppProjects + root app-of-apps (`root.yaml`), applied by hand once
+- `argocd/apps/` — one Application per app, reconciled by `root`
+- `archived/` — frozen; excluded from `verify-charts.sh` unless `--archived`
+- `docs/adr/` — architecture decisions
+
 ## Build/Lint/Test Commands
 
-- **Helm lint**: `helm lint <chart-name>/` - Validate Helm chart syntax
-- **Helm template**: `helm template <chart-name>/` - Test template rendering
-- **YAML validation**: `yamllint <file>.yaml` - Validate YAML syntax
-- **Test single chart**: `helm install --dry-run --debug <release> <chart>/`
+- **Verify everything**: `./scripts/verify-charts.sh` (derives chart list via `find`, runs `helm dependency build` + `helm lint` + `helm template` in a temp copy, validates `platform/postgres/**.yaml`)
+- **Include archived**: `./scripts/verify-charts.sh --archived`
+- **Single chart**: `helm dependency build apps/<app>/ && helm template <app> apps/<app>/`
+- **Helm lint**: `helm lint charts/<chart>/`
+- **YAML validation**: `yamllint <file>.yaml`
 
 ## Code Style Guidelines
 
@@ -17,57 +28,35 @@
 
 ## Naming Conventions
 
-- Chart names: kebab-case (e.g., `common-chart`, `explana-app`)
-- Resource names: Use fullname helper functions
+- Chart names: kebab-case and equal to the directory name (`apps/payroll/Chart.yaml` → `name: payroll`)
+- Resource names: use fullname helper functions
 - Values: camelCase in values.yaml
-- Templates: Use chart name prefix for helpers
-
-## File Structure
-
-- Common chart in `charts/common-chart/` for reusable templates
-- App-specific values in `<app-name>/values.yaml`
-- MongoDB deployments use StatefulSets with PVCs
-- Ingress uses nginx controller with cert-manager
+- Templates: use chart name prefix for helpers
 
 ## Common Chart Usage
 
-- **NEVER deploy using helm install/upgrade** - Helm is for verification only
-- Verify a single app with the wrapper form: `helm template <release> <app>/`
-- Common chart is published to GHCR as an OCI artifact; consumers reference `oci://ghcr.io/emvnuel/charts` (bump the chart version on content changes)
-- Verify every consumer: `scripts/verify-charts.sh`
-- Install notes are subchart notes: view them with `helm install <name> <app>/ --dry-run=client --render-subchart-notes` (ArgoCD does not display notes)
-- Override values using `nameOverride` for app-specific naming
-- Use helper functions: `{{ include "common-chart.fullname" . }}`
-- Standard patterns: deployment, service, ingress, configmap, serviceaccount
-- Secrets are referenced, never created: wire an existing Secret with `secret.name` + `secret.envFrom`; keep payloads out of tracked values
-- Apps inherit all common-chart features via values.yaml overrides
+- `charts/common-chart/` is published to GHCR as an OCI artifact by `.github/workflows/publish-charts.yml`; consumers pin `oci://ghcr.io/emvnuel/charts` in `Chart.yaml`
+- **Bump `version` in `charts/common-chart/Chart.yaml` on every content change** — the workflow refuses to overwrite a published version
+- Never vendor `common-chart` as `.tgz`; ArgoCD and `verify-charts.sh` run `helm dependency build`
+- Apps inherit common-chart features via values.yaml overrides
 
-## Deployment via ArgoCD
+## Deployment via ArgoCD (app-of-apps)
 
-- **Create a temporary ArgoCD Application manifest** for deployment:
-  ```yaml
-  apiVersion: argoproj.io/v1alpha1
-  kind: Application
-  metadata:
-    name: <app-name>
-    namespace: argocd
-  spec:
-    project: default
-    source:
-      repoURL: <git-repo-url>
-      targetRevision: HEAD
-      path: <app-name>
-    destination:
-      server: https://kubernetes.default.svc
-      namespace: <target-namespace>
-    syncPolicy:
-      automated:
-        prune: true
-        selfHeal: true
-  ```
-- Apply the manifest: `kubectl apply -f <temp-manifest>.yaml`
-- **Delete the temporary manifest file after apply**: `rm <temp-manifest>.yaml`
-- ArgoCD will sync and manage the application from the Git repository
+- The root Application (`argocd/bootstrap/root.yaml`, `path: argocd/apps`) manages every app Application
+- New app: chart in `apps/<nome>/` + commit `argocd/apps/<nome>.yaml` (`targetRevision: master`, `path: apps/<nome>`)
+- **NEVER** create a temporary manifest and `kubectl apply` it — the desired state is always git
+- **NEVER** move an app directory without updating the Application `path:` **in the same commit**
+- Reorg/moves must render identical manifests: `diff <(helm template ...) <(helm template ...)` (only `# Source:` comments may differ)
+- Postgres (`platform/postgres/`) is a raw directory app with `project: postgres` and **no automated sync**; the operator install contains only Namespace + ServiceAccount
+- Platform wrappers (`platform/kube-prometheus-stack/`, `platform/headlamp/`) depend on upstream charts; ArgoCD runs `helm dependency build` automatically
+
+## Zero-downtime rules
+
+- Keep each app's `strategy` semantics: `Recreate` when a single pod cannot run twice (ex.: `hermes-agent`), `RollingUpdate` otherwise
+- Never change `path:` without the matching move in the same commit; workloads must not be recreated by a reorg
+- Secrets are referenced, never created: wire an existing Secret (`secret.name` + `secret.envFrom`); keep payloads out of tracked values
+- Git-ignored globs cover every app: `secrets.yaml`, `*-secrets.yaml`, `*.secret.yaml` (root `.gitignore`)
+- Grafana uses `grafana.admin.existingSecret` (no plaintext password); the live Secret is protected with `argocd.argoproj.io/sync-options: Prune=false`
 
 ## Error Handling
 

@@ -13,7 +13,7 @@ PersistentVolumeClaim).
 ## What is forked from common-chart (keep in sync by hand)
 
 `templates/_helpers.tpl` is a line-for-line fork of
-`common-chart/templates/_helpers.tpl`, with only the `common-chart.` prefix renamed
+`charts/common-chart/templates/_helpers.tpl`, with only the `common-chart.` prefix renamed
 to `mysql-chart.` (plus minor comment-wording differences):
 
 | mysql-chart template | common-chart counterpart | Status |
@@ -28,7 +28,7 @@ Not forked: `common-chart.serviceAccountName` and `common-chart.serviceName` hav
 counterpart here — `statefulset.yaml` sets neither a `serviceAccountName` nor a
 parameterized service name.
 
-`templates/statefulset.yaml` copies these `common-chart/templates/deployment.yaml`
+`templates/statefulset.yaml` copies these `charts/common-chart/templates/deployment.yaml`
 idioms (same shape, mysql-specific values):
 
 1. `metadata.name: {{ include "<chart>.fullname" . }}` and
