@@ -145,3 +145,48 @@ done
 ## 6) Incident History
 
 - **2026-10-11** — during the k3s v1.32.4 -> v1.36.5 zero-downtime rolling upgrade, Redis and the application-controller restarted multiple times. Three apps were left without their managed-resources key: `copilot-api`, `headlamp`, `personal-landing-page`. Symptom: `Unable to load data: error getting cached app managed resources: cache: key is missing` on any resource click. Forensics with `redis-cli monitor` showed `publish` without `set` for `copilot-api`. Recovery: hard refresh of the affected apps + application-controller restart; validated with a UI click returning `"grpc.code":"OK"` at 20:34:35Z.
+- **2026-10-18** — após migrar `headlamp`/`kube-prometheus-stack` de multi-source (chart externo + `$values`) para source única (`path: platform/*`), o `status.history`/`status.operationState` antigos mantinham a URL do repositório Helm. A UI chama `RevisionMetadata` nessa URL (Git-only) e o repo-server falha. Fix: seção 7.
+
+---
+
+## 7) UI "Unable to load data" com repositório Helm no status (multi-source → source única)
+
+Sintoma (visto 2026-10-18):
+
+```
+Unable to load data: error acquiring repo lock: failed to initialize repository resources:
+rpc error: code = Internal desc = Failed to fetch default:
+`git fetch origin --tags --force --prune` failed exit status 128:
+fatal: repository 'https://kubernetes-sigs.github.io/headlamp/' not found
+```
+
+Causa: a Application mudou de `spec.sources` (chart Helm externo + `$values`) para
+`spec.source` único, mas entradas antigas de `status.history` e/ou
+`status.operationState.syncResult.sources` continuam guardando a URL do **repositório
+Helm**. Ao abrir o app, o `argocd-server` chama `RevisionMetadata` com essa URL por
+`sourceIndex`; o repo-server trata todo repo como Git e falha (repo Helm não tem `git fetch`).
+O workload não é afetado — é só o painel do app.
+
+Diagnóstico (deve retornar vazio para apps que só usam o repo Git):
+
+```bash
+kubectl -n argocd get apps -o json | jq -r '
+  .items[] | .metadata.name as $n |
+  ([.status.history[]?|(.source.repoURL?), (.sources[]?.repoURL?)] +
+   [(.status.operationState.syncResult.sources[]?.repoURL?)] +
+   [(.status.operationState.operation.sync.sources[]?.repoURL?)]) |
+  map(select(. != null and . != "" and (.|test("github.com/emvnuel/deployments"))|not)) |
+  select(length > 0) | "\($n): \(.)"'
+```
+
+Fix (limpa somente status de exibição; seguro, não mexe em spec/workload):
+
+```bash
+kubectl -n argocd patch application <app> --type=merge \
+  -p '{"status":{"history":null,"operationState":null}}'
+kubectl -n argocd annotate application <app> argocd.argoproj.io/refresh=hard --overwrite
+```
+
+Prevenção: ao converter um app de `sources` para `source` (ou ao mover a fonte para o
+próprio repo), limpe o status antigo na mesma janela e recarregue a UI (Cmd/Ctrl+Shift+R).
+O próximo sync repopula `history` com a fonte Git correta.
