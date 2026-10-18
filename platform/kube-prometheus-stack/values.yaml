@@ -308,11 +308,10 @@ extraServiceMonitors:
       - port: metrics
         path: /metrics
         interval: 30s
-
-# -- PodMonitors extras (mesma motivação do bloco acima). ingress-nginx não tem
-# -- Service expondo 10254 (chart instalado fora do repo); PodMonitor com
-# -- targetPort evita criar um Service só para scrape.
-extraPodMonitors:
+  # -- O chart do ingress-nginx (instalado fora deste repo) não expõe a porta
+  # -- 10254 em nenhum Service; templates/ingress-nginx-metrics-service.yaml
+  # -- cria um Service só para scrape (PodMonitor com targetPort não funciona:
+  # -- portas não declaradas no container não geram target).
   - name: ingress-nginx
     jobLabel: app.kubernetes.io/name
     namespaceSelector:
@@ -321,8 +320,8 @@ extraPodMonitors:
     selector:
       matchLabels:
         app.kubernetes.io/name: ingress-nginx
-        app.kubernetes.io/component: controller
-    podMetricsEndpoints:
-      - targetPort: 10254
+        app.kubernetes.io/component: metrics
+    endpoints:
+      - port: metrics
         path: /metrics
         interval: 30s

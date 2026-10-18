@@ -1,0 +1,29 @@
+{{/*
+Service de metrics do ingress-nginx.
+
+O chart do ingress-nginx foi instalado fora deste repo e não cria Service para
+a porta 10254. Um PodMonitor com `targetPort` numérico NÃO funciona aqui: o
+Prometheus Operator só monta targets para portas declaradas no container, e o
+controller não declara 10254. Este Service resolve — os Endpoints apontam para
+pod:10254, que existe de verdade.
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx-controller-metrics
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/part-of: kube-prometheus-stack
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 10254
+      targetPort: 10254
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/component: controller

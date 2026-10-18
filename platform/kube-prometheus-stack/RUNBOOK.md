@@ -83,15 +83,15 @@ Do not re-enable them on k3s unless the endpoints are actually exposed.
 
 cert-manager, ArgoCD and ingress-nginx are installed outside this repo but
 expose Prometheus metrics. They are scraped via the wrapper's own
-`extraServiceMonitors` / `extraPodMonitors` (values.yaml, rendered by
-`templates/servicemonitors.yaml` / `templates/podmonitors.yaml` as individual
-objects — not the upstream `additional*` keys, which emit `kind: List`):
+`extraServiceMonitors` (values.yaml, rendered by
+`templates/servicemonitors.yaml` as individual objects — not the upstream
+`additional*` keys, which emit `kind: List`):
 
 | Component | Target | Notes |
 |---|---|---|
 | cert-manager (controller/cainjector/webhook) | Services `:9402` | port names differ per Service |
 | ArgoCD (controller/server/repo/notifications/applicationset) | Services `:8082/:8083/:8084/:9001/:8080` | |
-| ingress-nginx | Pod `:10254` | no Service exposes 10254 → PodMonitor with `targetPort` |
+| ingress-nginx | Pod `:10254` | no chart Service exposes 10254 → dedicated metrics Service + ServiceMonitor (`templates/ingress-nginx-metrics-service.yaml`) |
 
 To scrape a new component: verify the endpoint from inside the Prometheus pod
 first (`kubectl exec -n monitoring prometheus-kube-prometheus-stack-prometheus-0 -c prometheus -- wget -S -qO- <url>`),
