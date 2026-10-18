@@ -78,6 +78,14 @@ kube-prometheus-stack:
       datasources:
         enabled: true
         searchNamespace: ALL
+    # -- Datasource do Loki (stack de logs em platform/loki); URL do gateway.
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.logging.svc.cluster.local
+        jsonData:
+          maxLines: 1000
     admin:
       existingSecret: grafana-admin
   alertmanager:

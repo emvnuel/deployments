@@ -1,0 +1,31 @@
+{{- /*
+Regras do Ruler do Loki (alertas baseados em logs).
+
+O chart do Loki sobe um sidecar (kiwigrid/k8s-sidecar) que copia para dentro do
+Loki todo ConfigMap deste namespace com o label `loki_rule: "1"`; o Ruler lê de
+/rules e dispara no Alertmanager (→ Telegram).
+
+Limiar conservador de propósito: evita ruído de scanner/404 em access logs.
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-rules
+  namespace: {{ .Release.Namespace }}
+  labels:
+    loki_rule: "1"
+data:
+  logs.yaml: |
+    groups:
+      - name: logs
+        rules:
+          - alert: LogErrorsHigh
+            expr: |
+              sum by (namespace) (
+                count_over_time({namespace=~".+"} |~ "(?i)\\b(error|exception|fatal)\\b" [10m])
+              ) > 25
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Volume alto de logs de erro (investigar no Grafana > Explore > Loki)"

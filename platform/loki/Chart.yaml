@@ -1,0 +1,10 @@
+apiVersion: v2
+name: loki
+description: Wrapper do chart upstream grafana/loki (armazenamento e consulta de logs)
+type: application
+version: 0.1.0
+appVersion: "7.3.0"
+dependencies:
+  - name: loki
+    version: 7.3.0
+    repository: https://grafana.github.io/helm-charts

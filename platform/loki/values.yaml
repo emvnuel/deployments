@@ -1,0 +1,166 @@
+# Wrapper do grafana/loki em modo SingleBinary: uma réplica, storage filesystem
+# no PVC (local-path), retenção de 14 dias via compactor.
+# Coleta: Grafana Alloy (platform/alloy) → gateway deste Loki.
+# Design e decisões: docs/adr/0003-logs-centralizados.md
+#
+# Obs.: tudo abaixo da chave `loki:` é o values do chart upstream (padrão dos
+# wrappers do repo — ver platform/kube-prometheus-stack/values.yaml).
+
+loki:
+  deploymentMode: SingleBinary
+
+  global:
+    clusterDomain: cluster.local
+
+  loki:
+    # -- Auth desabilitada: cluster single-tenant, sem gateway de autenticação.
+    auth_enabled: false
+
+    commonConfig:
+      replication_factor: 1
+
+    storage:
+      type: filesystem
+
+    schemaConfig:
+      configs:
+        - from: "2024-04-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+
+    limits_config:
+      # -- Retenção: 14 dias (aplicada pelo compactor abaixo).
+      retention_period: 336h
+      allow_structured_metadata: true
+      volume_enabled: true
+
+    # -- Sem telefone para casa (stats.grafana.org).
+    analytics:
+      reporting_enabled: false
+
+    compactor:
+      retention_enabled: true
+      delete_request_store: filesystem
+
+    # -- Ruler: avalia as regras de log (ConfigMap loki-rules, ver templates/)
+    # -- e dispara no Alertmanager → Telegram.
+    # -- Nota: com auth_enabled=false o tenant é "fake", então o sidecar
+    # -- escreve em /rules/fake (subpasta por tenant exigida pelo rulestore
+    # -- local do Loki) — ver sidecar.rules.folder abaixo.
+    rulerConfig:
+      enable_api: true
+      alertmanager_url: http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093
+      ring:
+        kvstore:
+          store: inmemory
+      storage:
+        type: local
+        local:
+          directory: /rules
+
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 20Gi
+
+  # -- Zero réplicas nos outros modos de deployment (só SingleBinary ativo).
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
+  bloomCompactor:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
+
+  # -- Memcached (chunks/results cache) desnecessário nesta escala.
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+
+  # -- Gateway nginx do chart: ponto único de entrada (URL usada pelo Alloy,
+  # -- pelo datasource do Grafana e pelo canary). verboseLogging=false para
+  # -- não poluir os próprios logs.
+  gateway:
+    replicas: 1
+    verboseLogging: false
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+  # -- Canary: escreve/consulta logs continuamente; serve como teste
+  # -- end-to-end do pipeline (query: {pod=~"loki-canary.*"}).
+  lokiCanary:
+    enabled: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+  # -- `helm test` hook não é usado pelo ArgoCD.
+  test:
+    enabled: false
+
+  # -- Sidecar de regras: copia ConfigMaps com label `loki_rule=1` deste
+  # -- namespace para /rules (lido pelo ruler). O folder inclui a subpasta do
+  # -- tenant "fake" (auth desabilitada) exigida pelo rulestore local.
+  sidecar:
+    rules:
+      enabled: true
+      labelValue: "1"
+      folder: /rules/fake
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi
+
+  monitoring:
+    # -- Dashboards oficiais do Loki; o sidecar do Grafana (searchNamespace
+    # -- ALL) coleta o ConfigMap com label grafana_dashboard=1.
+    dashboards:
+      enabled: true
+      namespace: logging
+    # -- Scrape das métricas do Loki pelo Prometheus (o SM é pego pelo
+    # -- selector vazio do Prometheus CR).
+    serviceMonitor:
+      enabled: true
