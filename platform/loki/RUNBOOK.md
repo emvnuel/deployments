@@ -62,6 +62,12 @@ Equivalente via API (sem Grafana): `http://loki-gateway.logging.svc.cluster.loca
   `argocd.argoproj.io/compare-options: ServerSideDiff=true` — não remover.
 - **Volume alto no primeiro deploy:** esperado — o Alloy lê os arquivos existentes desde o
   início (posições vazias). Depois da primeira leitura, só novas linhas.
+- **Datasource Loki não aparece no Grafana:** o CM `kube-prometheus-stack-grafana-datasource`
+  é aplicado pelo sidecar `grafana-sc-datasources`, que dispara o reload do provisioning via
+  API admin do Grafana **com as credenciais do Secret `grafana-admin`**. Se a senha divergir do
+  banco live, o reload retorna 401 e o datasource novo não entra (o Grafana lê datasources só
+  no boot). Rotacionar conforme ADR 0002 §4.3 e forçar um evento (mudança no CM ou restart do
+  deployment).
 
 ## 6) Operação
 

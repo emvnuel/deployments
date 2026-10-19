@@ -122,9 +122,17 @@ Total de alvos ativos: 40/40 `up` (2026-10-18T22:50 UTC).
 
 ### 4.3 Rotação do admin do Grafana
 
-- **Evidência:** o Secret `grafana-admin` contém a senha literal `admin` e o valor **divergiu** do banco
-  (login com as credenciais do Secret → 401; Grafana ignora a env após o primeiro boot).
-- Ação: `grafana cli admin reset-admin-password` + atualizar o Secret `grafana-admin` (fora do git) e sync.
+**Status: concluído em 2026-10-18.**
+
+- **Evidência (antes):** Secret `grafana-admin` com senha literal `admin`, divergente do banco live;
+  Grafana ignora a env `GF_SECURITY_ADMIN_PASSWORD` após o primeiro boot.
+- **Impacto descoberto na stack de logs:** o sidecar `grafana-sc-datasources` recarrega o
+  provisioning via `/api/admin/provisioning/datasources/reload` usando as credenciais do Secret;
+  com a divergência o reload retornava 401 (e o acúmulo de tentativas acionou o brute-force do
+  Grafana) — por isso o datasource do Loki não aparecia. Ver `platform/loki/RUNBOOK.md` §5.
+- **Executado:** `grafana cli admin reset-admin-password` (senha forte, atualizada no Secret
+  `grafana-admin`, fora do git) + rollout do deployment; reload autenticado validado (200) e
+  datasource inserido (`inserting datasource from configuration name=Loki`).
 
 ### 4.4 Retenção e capacidade
 
