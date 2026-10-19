@@ -77,3 +77,27 @@ de logs com GitOps, sem introduzir Elastic.
 - [x] Prefixo CRI removido (linhas limpas no Explore); multiline do Tomcat escopado
 - [x] Sidecar de regras sem restarts; `LogErrorsHigh` no formato do Alertmanager (v2)
 - [x] Ingestão inicial (~272k linhas de arquivos + journald) concluída sem impacto nos nós
+
+## 6. Adendo (2026-10-19) — Events, filtros de ruído e alertas
+
+- **Kubernetes Events** adicionados (`loki.source.kubernetes_events` →
+  `{job="kubernetes-events"}`; validado com pod de teste: events chegam, e o
+  contador `events_non_owner_node` cresce nos agentes). A distribuição nativa
+  via `clustering` do componente **não é confiável** na Alloy v1.20.1: o
+  memberlist formava (métricas `cluster_node_peers`/`gossip_alive_peers` = 4) e
+  mesmo assim **todos** os nós assistiam tudo (Lookup do ckit falhava-aberto →
+  duplicados ×nós). Solução determinística: todos assistem (watch é barato),
+  e o pipeline descarta as cópias dos agentes
+  (`stage.match { selector = "{node=~\".+\", node!=\"master\"}" }`).
+  Clustering global do Alloy revertido (nenhum componente o usa agora).
+  ⚠️ `stage.drop` com `source` só lê dados **extraídos** — para casar labels,
+  `stage.match` é o mecanismo correto.
+- **Filtro de ruído do journald**: drops de `apparmor_audit` (audits do kernel)
+  e `sshd_preauth_noise` (desconexões de SSH de bots, padrão `[preauth]`).
+  "Failed password" preservado (brute-force). Contadores em
+  `loki_process_dropped_lines_total{reason=...}`.
+- **Alertas do Loki**: regras oficiais do chart habilitadas (`monitoring.rules`
+  → `LokiRequestErrors/Panics/Latency`, `LokiCanaryLatency`,
+  `LokiTooManyCompactorsRunning`) + `LokiDiskUsageHigh` (nosso
+  `templates/prometheus-rule.yaml`: disco do PVC > 85% por 30m; local-path
+  reflete o filesystem do nó).
