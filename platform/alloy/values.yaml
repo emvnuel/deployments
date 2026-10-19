@@ -17,14 +17,13 @@ alloy:
     # -- Sem relatório de uso anônimo.
     enableReporting: false
 
-    # -- Clustering: necessário para o loki.source.kubernetes_events distribuir
-    # -- a coleta entre os nós. Sem clustering, TODOS os pods do DaemonSet
-    # -- coletariam todos os Events (duplicando linhas ×4). Os demais
-    # -- componentes não optam por clustering, então a coleta de arquivos/
-    # -- journald por nó continua idêntica.
-    clustering:
-      enabled: true
-      name: logging
+    # -- Clustering do Alloy DESABILITADO de propósito. Foi testado para
+    # -- distribuir o loki.source.kubernetes_events entre os nós: o memberlist
+    # -- formava (4 peers), mas o Lookup do ckit falhava-aberto e TODOS os nós
+    # -- assistiam todos os Events (duplicados × nós). A solução determinística
+    # -- está no pipeline de `events` abaixo (filtro por nó). Se um dia
+    # -- reativar clustering + `clustering {}` no componente, REMOVER o filtro
+    # -- e validar que apenas um nó ingere antes de confiar.
 
     configMap:
       create: true
@@ -172,18 +171,18 @@ alloy:
 
         // ---- Kubernetes Events ---------------------------------------------
         // Converte Events (OOMKilled, FailedScheduling, probe failures...) em
-        // linhas de log. `clustering { enabled = true }` + clustering global
-        // fazem APENAS UM nó coletar (lista de namespaces vazia = todos) —
-        // sem isso cada instância replicaria os mesmos Events.
-        // Labels: namespace, job, instance + estáticos abaixo (node mostra
-        // qual nó está coletando, útil para debug).
+        // linhas de log.
+        //
+        // ⚠️ Os Events são cluster-wide: TODAS as instâncias do DaemonSet os
+        // assistem (a distribuição via `clustering` do componente não é
+        // confiável — Lookup fail-open, ver comentário no topo dos values).
+        // Para não duplicar entradas, o pipeline abaixo DESCARTA as linhas
+        // coletadas nos nós agentes (`node-*`) e mantém apenas as do
+        // `master` — exatamente 1 cópia de cada Event.
+        // Labels: namespace, job, instance + estáticos abaixo.
 
         loki.source.kubernetes_events "events" {
           job_name = "kubernetes-events"
-
-          clustering {
-            enabled = true
-          }
 
           forward_to = [loki.process.events.receiver]
         }
@@ -196,6 +195,14 @@ alloy:
               cluster = "homelab",
               node    = sys.env("NODE_NAME"),
             }
+          }
+
+          // Mantém só a cópia do nó master (nós agentes seguem o padrão
+          // `node-*`). Se a convenção de nomes mudar, ajustar aqui.
+          stage.drop {
+            drop_counter_reason = "events_non_owner_node"
+            source              = "node"
+            expression          = "^node-"
           }
         }
 
