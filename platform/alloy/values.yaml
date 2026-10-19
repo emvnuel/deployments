@@ -198,11 +198,13 @@ alloy:
           }
 
           // Mantém só a cópia do nó master (nós agentes seguem o padrão
-          // `node-*`). Se a convenção de nomes mudar, ajustar aqui.
-          stage.drop {
+          // `node-*`). Obs.: `stage.drop` com `source` só lê dados EXTRAÍDOS
+          // (não labels) — por isso usamos `stage.match` com seletor de
+          // labels aqui. Se a convenção de nomes mudar, ajustar o matcher.
+          stage.match {
+            selector            = "{node=~\".+\", node!=\"master\"}"
+            action              = "drop"
             drop_counter_reason = "events_non_owner_node"
-            source              = "node"
-            expression          = "^node-"
           }
         }
 
