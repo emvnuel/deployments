@@ -17,6 +17,15 @@ alloy:
     # -- Sem relatório de uso anônimo.
     enableReporting: false
 
+    # -- Clustering: necessário para o loki.source.kubernetes_events distribuir
+    # -- a coleta entre os nós. Sem clustering, TODOS os pods do DaemonSet
+    # -- coletariam todos os Events (duplicando linhas ×4). Os demais
+    # -- componentes não optam por clustering, então a coleta de arquivos/
+    # -- journald por nó continua idêntica.
+    clustering:
+      enabled: true
+      name: logging
+
     configMap:
       create: true
       content: |
@@ -130,7 +139,64 @@ alloy:
             node = sys.env("NODE_NAME"),
           }
 
+          forward_to = [loki.process.journal.receiver]
+        }
+
+        // ---- Journald: filtro de ruído -------------------------------------
+        // Descarta o que é alto volume e sem valor operacional:
+        //  - audits do apparmor (kernel, alto volume em alguns nós);
+        //  - desconexões rotineiras de SSH de bots ([preauth]).
+        // "Failed password" NÃO é filtrado (evidência de brute-force) — só as
+        // linhas de encerramento de conexão.
+        // Contadores: loki_process_dropped_lines_total{reason=...}.
+
+        loki.process "journal" {
           forward_to = [loki.write.loki.receiver]
+
+          stage.static_labels {
+            values = {
+              cluster = "homelab",
+            }
+          }
+
+          stage.drop {
+            drop_counter_reason = "apparmor_audit"
+            expression          = "apparmor="
+          }
+
+          stage.drop {
+            drop_counter_reason = "sshd_preauth_noise"
+            expression          = "Connection (closed|reset) by .*\\[preauth\\]"
+          }
+        }
+
+        // ---- Kubernetes Events ---------------------------------------------
+        // Converte Events (OOMKilled, FailedScheduling, probe failures...) em
+        // linhas de log. `clustering { enabled = true }` + clustering global
+        // fazem APENAS UM nó coletar (lista de namespaces vazia = todos) —
+        // sem isso cada instância replicaria os mesmos Events.
+        // Labels: namespace, job, instance + estáticos abaixo (node mostra
+        // qual nó está coletando, útil para debug).
+
+        loki.source.kubernetes_events "events" {
+          job_name = "kubernetes-events"
+
+          clustering {
+            enabled = true
+          }
+
+          forward_to = [loki.process.events.receiver]
+        }
+
+        loki.process "events" {
+          forward_to = [loki.write.loki.receiver]
+
+          stage.static_labels {
+            values = {
+              cluster = "homelab",
+              node    = sys.env("NODE_NAME"),
+            }
+          }
         }
 
         // ---- Envio para o Loki ---------------------------------------------

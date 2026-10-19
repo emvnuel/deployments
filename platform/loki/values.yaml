@@ -168,3 +168,7 @@ loki:
     # -- selector vazio do Prometheus CR).
     serviceMonitor:
       enabled: true
+    # -- Regras oficiais do chart: recording rules + alertas do Loki
+    # -- (request errors/panics, canary...) avaliadas pelo Prometheus.
+    rules:
+      enabled: true

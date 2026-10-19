@@ -1,0 +1,29 @@
+{{- /*
+Alertas de armazenamento do Loki (avaliados pelo Prometheus, não pelo Ruler).
+
+Nota: o PVC é local-path — `kubelet_volume_stats_used_bytes` reflete o uso do
+filesystem do NÓ que hospeda o PVC (não só o diretório do Loki). Ainda assim é
+o sinal certo para "o disco do Loki está enchendo" e complementa as regras
+genéricas do node-exporter (NodeFilesystemSpaceFillingUp/AlmostOutOfSpace).
+*/ -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: loki-storage-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: loki
+spec:
+  groups:
+    - name: loki-storage
+      rules:
+        - alert: LokiDiskUsageHigh
+          expr: |
+            kubelet_volume_stats_used_bytes{namespace="{{ .Release.Namespace }}", persistentvolumeclaim="storage-loki-0"}
+              / kubelet_volume_stats_capacity_bytes{namespace="{{ .Release.Namespace }}", persistentvolumeclaim="storage-loki-0"} > 0.85
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Disco que hospeda o PVC do Loki acima de 85%"
+            description: "PVC storage-loki-0 (local-path: reflete o filesystem do nó). Checar retenção/crescimento (platform/loki/RUNBOOK.md)."
