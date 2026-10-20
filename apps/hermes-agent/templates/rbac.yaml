@@ -1,0 +1,18 @@
+{{- if .Values.rbac.clusterAdmin }}
+{{- $saName := (index .Values "common-chart").serviceAccount.name | default (include "common-chart.fullname" .) }}
+# Full cluster access for the agent. The ServiceAccount token is mounted inside
+# the pod, so anyone who can drive the agent (Telegram allowlist, dashboard
+# login) effectively holds cluster-admin. Keep the allowlist narrow.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "common-chart.fullname" . }}-cluster-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: {{ $saName }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

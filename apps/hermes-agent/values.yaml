@@ -131,6 +131,14 @@ common-chart:
     tls:
       enabled: true
 
+# -- Cluster access for the agent's ServiceAccount.
+rbac:
+  # -- Bind the chart's ServiceAccount to the built-in `cluster-admin` role.
+  # -- WARNING: anyone able to drive the agent (Telegram allowlist, dashboard
+  # -- login) effectively gets full cluster control. Keep the allowlist narrow
+  # -- and protect the dashboard (Cloudflare Access or a strong password).
+  clusterAdmin: true
+
 # -- PVC backing /opt/data (HERMES_HOME). Created by templates/pvc.yaml.
 persistence:
   enabled: true
