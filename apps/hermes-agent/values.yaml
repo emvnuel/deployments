@@ -52,7 +52,8 @@ common-chart:
       memory: 4Gi
     requests:
       cpu: 500m
-      memory: 1Gi
+      # -- pico 7d: 2082Mi; request próximo do pico para evitar eviction
+      memory: 2Gi
 
   # -- Security contexts intentionally unset: the image must start as root
   # -- (s6 chowns /opt/data, then drops to `hermes`). runAsNonRoot breaks boot.

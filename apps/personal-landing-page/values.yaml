@@ -13,6 +13,11 @@ common-chart:
     limits:
       cpu: 100m
       memory: 512Mi
+    requests:
+      # -- pico 7d: 11.5m; folga ~2x
+      cpu: 25m
+      # -- pico 7d: 165Mi; folga ~1.5x
+      memory: 256Mi
   ingress:
     enabled: true
     hostnames: "emvnuel.tech,www.emvnuel.tech"

@@ -13,6 +13,11 @@ common-chart:
     limits:
       cpu: 250m
       memory: 512Mi
+    requests:
+      # -- pico 7d: 0.2m; mínimo prático
+      cpu: 25m
+      # -- pico 7d: 37Mi; folga ~2.5x
+      memory: 96Mi
   ingress:
     enabled: true
     hostnames: "payroll.gambiarra.space"
