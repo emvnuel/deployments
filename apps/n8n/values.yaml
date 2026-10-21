@@ -64,7 +64,10 @@ n8n:
       limits:
         memory: 2048Mi
       requests:
-        memory: 512Mi
+        # -- pico 7d: 39m; folga ~1.3x
+        cpu: 50m
+        # -- pico 7d: 535Mi; folga ~1.2x
+        memory: 640Mi
 
     # Persistence configuration
     persistence:

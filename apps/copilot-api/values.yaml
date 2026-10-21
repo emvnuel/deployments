@@ -18,8 +18,10 @@ common-chart:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 256Mi
+      # -- pico 7d: 0.9m; mínimo prático
+      cpu: 25m
+      # -- pico 7d: 65Mi; folga ~2x
+      memory: 128Mi
 
   # -- Load secrets from Kubernetes Secret
   secret:

@@ -12,8 +12,10 @@ common-chart:
     type: ClusterIP
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      # -- pico 7d: 0.7m; mínimo prático
+      cpu: 25m
+      # -- pico 7d: 155Mi; folga ~1.2x
+      memory: 192Mi
     limits:
       cpu: 200m
       memory: 256Mi
@@ -53,7 +55,8 @@ mysql-chart:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      # -- pico 7d: 367Mi; folga ~1.2x
+      memory: 448Mi
     limits:
       cpu: 300m
       memory: 512Mi

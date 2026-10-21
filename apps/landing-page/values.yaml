@@ -13,6 +13,11 @@ common-chart:
     limits:
       cpu: 100m
       memory: 512Mi
+    requests:
+      # -- pico 7d: 0.2m; mínimo prático (site estático)
+      cpu: 25m
+      # -- pico 7d: 3Mi; folga ~10x (site estático)
+      memory: 32Mi
   ingress:
     enabled: true
     hostnames: "gambiarra.space,www.gambiarra.space,www1.gambiarra.space"
