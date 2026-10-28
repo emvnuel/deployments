@@ -3,7 +3,7 @@ common-chart:
   replicaCount: 1
   image:
     repository: "myawesomeapps/personal-landing-page"
-    tag: "1.9"
+    tag: "1.10"
   service:
     name: "personal-landing-page-svc"
     port: 80
